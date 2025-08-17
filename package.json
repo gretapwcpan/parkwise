@@ -1,0 +1,53 @@
+{
+  "name": "parking-space-prototype",
+  "version": "1.0.0",
+  "description": "A cross-platform parking space booking system with real-time navigation",
+  "private": true,
+  "scripts": {
+    "install:all": "npm run install:backend && npm run install:frontend && npm run install:admin",
+    "install:backend": "cd backend && npm install",
+    "install:frontend": "cd frontend && npm install",
+    "install:admin": "cd admin-dashboard && npm install",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\" \"npm run dev:admin\"",
+    "dev:backend": "cd backend && npm start",
+    "dev:frontend": "cd frontend && npm start",
+    "dev:admin": "cd admin-dashboard && npm start",
+    "start": "npm run dev",
+    "build": "npm run build:frontend && npm run build:admin",
+    "build:frontend": "cd frontend && npm run build",
+    "build:admin": "cd admin-dashboard && npm run build",
+    "clean": "npm run clean:backend && npm run clean:frontend && npm run clean:admin",
+    "clean:backend": "cd backend && rm -rf node_modules package-lock.json",
+    "clean:frontend": "cd frontend && rm -rf node_modules package-lock.json build",
+    "clean:admin": "cd admin-dashboard && rm -rf node_modules package-lock.json build",
+    "test": "echo \"No tests configured yet\""
+  },
+  "workspaces": [
+    "backend",
+    "frontend",
+    "admin-dashboard"
+  ],
+  "devDependencies": {
+    "concurrently": "^7.6.0",
+    "turbo": "^1.10.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gretapwcpan/parking-space-prototype.git"
+  },
+  "keywords": [
+    "parking",
+    "booking",
+    "real-time",
+    "navigation",
+    "react",
+    "node",
+    "express"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gretapwcpan/parking-space-prototype/issues"
+  },
+  "homepage": "https://github.com/gretapwcpan/parking-space-prototype#readme"
+}

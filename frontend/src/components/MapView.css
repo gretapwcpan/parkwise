@@ -1,0 +1,130 @@
+.map-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+}
+
+/* Map overlay for status indicators */
+.map-overlay {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+}
+
+.connection-status {
+  background: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Marker styles */
+.marker {
+  font-size: 24px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.marker:hover {
+  transform: scale(1.2);
+}
+
+.marker.available {
+  filter: hue-rotate(120deg);
+}
+
+.marker.occupied {
+  filter: grayscale(100%);
+  opacity: 0.6;
+}
+
+.user-marker {
+  font-size: 28px;
+  animation: pulse 2s infinite;
+}
+
+.other-user-marker {
+  font-size: 20px;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Mapbox popup styles */
+.mapboxgl-popup-content {
+  padding: 15px;
+  border-radius: 8px;
+  min-width: 150px;
+}
+
+.mapboxgl-popup-content h3 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.mapboxgl-popup-content p {
+  margin: 5px 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.book-btn {
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.book-btn:hover {
+  background-color: #1976D2;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .map-overlay {
+    top: 5px;
+    right: 5px;
+  }
+  
+  .connection-status {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+  }
+  
+  .marker {
+    font-size: 20px;
+  }
+  
+  .user-marker {
+    font-size: 24px;
+  }
+}
+
+/* Fix for Mapbox attribution on mobile */
+.mapboxgl-ctrl-bottom-left,
+.mapboxgl-ctrl-bottom-right {
+  bottom: 20px;
+}

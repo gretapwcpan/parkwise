@@ -1,0 +1,17 @@
+{
+  "short_name": "ParkingSpace",
+  "name": "Parking Space Booking",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#2196F3",
+  "background_color": "#ffffff",
+  "orientation": "portrait",
+  "description": "Book parking spaces in real-time with live navigation"
+}
