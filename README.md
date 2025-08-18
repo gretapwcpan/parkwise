@@ -254,6 +254,21 @@ Modify `frontend/src/components/MapView.js` to change map appearance and behavio
 5. Serve frontend build files
 6. Configure HTTPS for production use
 
+## Documentation
+
+### 📚 Features Documentation
+- [Surrounding Information Feature](docs/features/SURROUNDING_INFO_FEATURE.md) - GPS-based location info and nearby places
+- [Map Style Options](docs/features/MAP_STYLE_OPTIONS.md) - Mapbox styling guide and comparisons
+- [Test Surrounding Info](docs/features/test-surrounding-info.html) - HTML test page for location features
+
+### 🛠️ Setup Guides
+- [Mapbox Setup Guide](docs/setup/MAPBOX_SETUP_GUIDE.md) - Complete guide for setting up Mapbox with parks and streets
+
+### 📋 Planning & Architecture
+- [LLM Integration Ideas](docs/planning/LLM_INTEGRATION_IDEAS.md) - AI/LLM features brainstorming
+- [LLM Implementation Plan](docs/planning/LLM_IMPLEMENTATION_PLAN.md) - Detailed implementation for intelligent features
+- [Project Names](docs/planning/PROJECT_NAMES.md) - Branding and naming suggestions
+
 ## License
 
 MIT License - see LICENSE file for details
