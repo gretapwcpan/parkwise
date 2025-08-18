@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Demo - Parking Space</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .demo-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            flex: 1;
+            padding: 12px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .primary {
+            background-color: #2196F3;
+            color: white;
+        }
+        .primary:hover {
+            background-color: #1976D2;
+        }
+        .success {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .success:hover {
+            background-color: #45a049;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .instructions {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .instructions h3 {
+            margin-top: 0;
+        }
+        .instructions ol {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚗 Parking Space Location Demo</h1>
+        
+        <div class="demo-info">
+            <h2>Test Location Features</h2>
+            <p>This demo page allows you to simulate location updates to test the surrounding information feature.</p>
+        </div>
+
+        <div class="button-group">
+            <button class="primary" onclick="simulateLocation()">
+                📍 Simulate Location Update
+            </button>
+            <button class="success" onclick="openMainApp()">
+                🚀 Open Main App
+            </button>
+        </div>
+
+        <div id="status"></div>
+
+        <div class="instructions">
+            <h3>How to test the surrounding information feature:</h3>
+            <ol>
+                <li>Click "Simulate Location Update" to trigger a location update</li>
+                <li>Click "Open Main App" to see the parking space app</li>
+                <li>In the main app, look for the "📍 Current Location" section</li>
+                <li>Click on it to expand and see surrounding information including:
+                    <ul>
+                        <li>Current street address</li>
+                        <li>Nearby restaurants</li>
+                        <li>Cafes, shops, and other places</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function showStatus(message, isError = false) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = isError ? 'status error' : 'status success';
+            statusDiv.textContent = message;
+        }
+
+        async function simulateLocation() {
+            try {
+                // Simulate location update via API
+                const response = await fetch('http://localhost:3001/api/location/simulate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userId: 'demo-user-' + Date.now(),
+                        startLat: 25.0330,
+                        startLng: 121.5654
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showStatus('✅ Location simulation started! User: ' + data.userId);
+                } else {
+                    throw new Error('Failed to start simulation');
+                }
+            } catch (error) {
+                showStatus('❌ Error: ' + error.message, true);
+            }
+        }
+
+        function openMainApp() {
+            window.open('http://localhost:3000', '_blank');
+        }
+    </script>
+</body>
+</html>

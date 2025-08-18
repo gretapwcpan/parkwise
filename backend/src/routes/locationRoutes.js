@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const locationService = require('../services/locationService');
 const notificationService = require('../services/notificationService');
+const geocodingService = require('../services/geocodingService');
 
 // Get all active locations
 router.get('/active', async (req, res) => {
@@ -168,6 +169,105 @@ router.post('/simulate/stop', async (req, res) => {
     }
   } catch (error) {
     console.error('Stop simulation error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get address from coordinates (reverse geocoding)
+router.get('/address', async (req, res) => {
+  try {
+    const { lat, lng } = req.query;
+    
+    if (!lat || !lng) {
+      return res.status(400).json({ 
+        error: 'Latitude (lat) and longitude (lng) parameters are required' 
+      });
+    }
+    
+    const latitude = parseFloat(lat);
+    const longitude = parseFloat(lng);
+    
+    const addressInfo = await geocodingService.getAddressFromCoordinates(latitude, longitude);
+    
+    if (!addressInfo) {
+      return res.status(404).json({ error: 'Address not found for given coordinates' });
+    }
+    
+    res.json({ address: addressInfo });
+  } catch (error) {
+    console.error('Get address error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get nearby places
+router.get('/nearby-places', async (req, res) => {
+  try {
+    const { lat, lng, category, radius } = req.query;
+    
+    if (!lat || !lng) {
+      return res.status(400).json({ 
+        error: 'Latitude (lat) and longitude (lng) parameters are required' 
+      });
+    }
+    
+    const latitude = parseFloat(lat);
+    const longitude = parseFloat(lng);
+    const searchRadius = radius ? parseInt(radius) : 1000;
+    
+    const places = await geocodingService.getNearbyPlaces(
+      latitude, 
+      longitude, 
+      category || 'restaurant',
+      searchRadius
+    );
+    
+    res.json({ places });
+  } catch (error) {
+    console.error('Get nearby places error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get comprehensive surrounding information
+router.get('/surrounding-info', async (req, res) => {
+  try {
+    const { lat, lng } = req.query;
+    
+    if (!lat || !lng) {
+      return res.status(400).json({ 
+        error: 'Latitude (lat) and longitude (lng) parameters are required' 
+      });
+    }
+    
+    const latitude = parseFloat(lat);
+    const longitude = parseFloat(lng);
+    
+    const surroundingInfo = await geocodingService.getSurroundingInfo(latitude, longitude);
+    
+    res.json({ surroundingInfo });
+  } catch (error) {
+    console.error('Get surrounding info error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get enriched parking spots with address information
+router.get('/parking-spots-enriched', async (req, res) => {
+  try {
+    // In a real app, you would fetch parking spots from database
+    // For now, using mock data
+    const mockParkingSpots = [
+      { id: 1, name: 'Spot A', lat: 25.0330, lng: 121.5654, available: true },
+      { id: 2, name: 'Spot B', lat: 25.0340, lng: 121.5664, available: false },
+      { id: 3, name: 'Spot C', lat: 25.0320, lng: 121.5644, available: true }
+    ];
+    
+    const enrichedSpots = await geocodingService.enrichParkingSpots(mockParkingSpots);
+    
+    res.json({ parkingSpots: enrichedSpots });
+  } catch (error) {
+    console.error('Get enriched parking spots error:', error);
     res.status(500).json({ error: error.message });
   }
 });

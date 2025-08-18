@@ -33,7 +33,7 @@ app.set('io', io);
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: [process.env.FRONTEND_URL, process.env.ADMIN_URL],
+  origin: [process.env.FRONTEND_URL, process.env.ADMIN_URL, 'http://localhost:8080', 'http://localhost:3000', 'http://localhost:3004'],
   credentials: true
 }));
 app.use(express.json());
@@ -48,7 +48,7 @@ app.use('/api/', limiter);
 
 // Routes
 app.use('/api/bookings', bookingRoutes);
-app.use('/api/locations', locationRoutes);
+app.use('/api/location', locationRoutes);
 app.use('/api/notifications', notificationRoutes);
 
 // Health check endpoint

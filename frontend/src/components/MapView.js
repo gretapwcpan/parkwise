@@ -22,7 +22,7 @@ const MapView = ({ parkingSpots, onSpotSelect, selectedSpot, userId }) => {
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
+      style: 'mapbox://styles/mapbox/outdoors-v12',
       center: [lng, lat],
       zoom: zoom,
     });
@@ -31,8 +31,12 @@ const MapView = ({ parkingSpots, onSpotSelect, selectedSpot, userId }) => {
       // Add parking spots as markers
       parkingSpots.forEach(spot => {
         const el = document.createElement('div');
-        el.className = `marker ${spot.available ? 'available' : 'occupied'}`;
-        el.innerHTML = '🅿️';
+        el.className = 'marker';
+        el.style.fontSize = '24px';
+        el.style.cursor = 'pointer';
+        // Use different colors for available vs occupied
+        el.innerHTML = spot.available ? '🟢' : '🔴';
+        el.title = `${spot.name} - ${spot.available ? 'Available' : 'Occupied'}`;
         
         const marker = new mapboxgl.Marker(el)
           .setLngLat([spot.lng, spot.lat])

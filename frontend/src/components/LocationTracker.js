@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSocket } from '../services/socketService';
 import { useApi } from '../services/apiService';
 
-const LocationTracker = ({ userId }) => {
+const LocationTracker = ({ userId, onLocationUpdate }) => {
   const { sendLocationUpdate } = useSocket();
   const api = useApi();
   const [tracking, setTracking] = useState(false);
@@ -43,6 +43,11 @@ const LocationTracker = ({ userId }) => {
         if (!lastLocation || hasLocationChanged(lastLocation, location)) {
           sendLocationUpdate(location);
           setLastLocation(location);
+          
+          // Call the callback to update parent component
+          if (onLocationUpdate) {
+            onLocationUpdate(location);
+          }
         }
       },
       (error) => {

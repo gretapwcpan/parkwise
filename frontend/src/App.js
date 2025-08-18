@@ -3,6 +3,7 @@ import MapView from './components/MapView';
 import BookingPanel from './components/BookingPanel';
 import LocationTracker from './components/LocationTracker';
 import NotificationHandler from './components/NotificationHandler';
+import SurroundingInfo from './components/SurroundingInfo';
 import { SocketProvider } from './services/socketService';
 import { ApiProvider } from './services/apiService';
 import './App.css';
@@ -12,6 +13,11 @@ function App() {
   const [selectedSpot, setSelectedSpot] = useState(null);
   const [activeBooking, setActiveBooking] = useState(null);
   const [showBookingPanel, setShowBookingPanel] = useState(false);
+  const [userLocation, setUserLocation] = useState({
+    latitude: 25.0330,
+    longitude: 121.5654,
+    accuracy: 10
+  });
 
   // Mock parking spots for demo
   const parkingSpots = [
@@ -67,8 +73,9 @@ function App() {
             )}
           </main>
 
-          <LocationTracker userId={user.id} />
+          <LocationTracker userId={user.id} onLocationUpdate={setUserLocation} />
           <NotificationHandler userId={user.id} />
+          <SurroundingInfo userLocation={userLocation} />
         </div>
       </SocketProvider>
     </ApiProvider>
