@@ -29,11 +29,16 @@ services:
       - DEBUG=true
       - LOG_LEVEL=INFO
       - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
-      # Add your API keys here or use .env file
-      # - OPENAI_API_KEY=${OPENAI_API_KEY}
-      # - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      # API keys are passed from backend/.env
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - LLM_MODEL=${LLM_MODEL:-gpt-4}
+      # OpenAI-compatible API support
+      - LLM_API_TYPE=${LLM_API_TYPE:-openai}
+      - LLM_API_BASE_URL=${LLM_API_BASE_URL:-}
+      - LLM_API_KEY=${LLM_API_KEY:-}
     env_file:
-      - ./llm-service/.env
+      - ./backend/.env
     volumes:
       - ./llm-service:/app
     networks:

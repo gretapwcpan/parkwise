@@ -4,6 +4,7 @@ from typing import Dict, Any
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
+from openai import OpenAI
 from src.config import config
 import json
 import logging
@@ -13,20 +14,28 @@ logger = logging.getLogger(__name__)
 class QueryParserNode:
     def __init__(self):
         # Initialize LLM based on config
-        if config.OPENAI_API_KEY:
+        if config.LLM_API_TYPE == "openai-compatible":
+            # Use OpenAI client with custom base URL
+            self.llm = ChatOpenAI(
+                model=config.LLM_MODEL,
+                temperature=config.TEMPERATURE,
+                api_key=config.LLM_API_KEY,
+                base_url=config.LLM_API_BASE_URL
+            )
+        elif config.LLM_API_TYPE == "openai":
             self.llm = ChatOpenAI(
                 model=config.LLM_MODEL,
                 temperature=config.TEMPERATURE,
                 api_key=config.OPENAI_API_KEY
             )
-        elif config.ANTHROPIC_API_KEY:
+        elif config.LLM_API_TYPE == "anthropic":
             self.llm = ChatAnthropic(
                 model=config.LLM_MODEL,
                 temperature=config.TEMPERATURE,
                 api_key=config.ANTHROPIC_API_KEY
             )
         else:
-            raise ValueError("No LLM API key configured")
+            raise ValueError(f"Invalid LLM_API_TYPE: {config.LLM_API_TYPE}")
     
     async def parse_intent(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """Parse the intent from the search query"""

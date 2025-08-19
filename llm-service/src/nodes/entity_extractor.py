@@ -15,20 +15,28 @@ logger = logging.getLogger(__name__)
 class EntityExtractorNode:
     def __init__(self):
         # Initialize LLM based on config
-        if config.OPENAI_API_KEY:
+        if config.LLM_API_TYPE == "openai-compatible":
+            # Use OpenAI client with custom base URL
+            self.llm = ChatOpenAI(
+                model=config.LLM_MODEL,
+                temperature=config.TEMPERATURE,
+                api_key=config.LLM_API_KEY,
+                base_url=config.LLM_API_BASE_URL
+            )
+        elif config.LLM_API_TYPE == "openai":
             self.llm = ChatOpenAI(
                 model=config.LLM_MODEL,
                 temperature=config.TEMPERATURE,
                 api_key=config.OPENAI_API_KEY
             )
-        elif config.ANTHROPIC_API_KEY:
+        elif config.LLM_API_TYPE == "anthropic":
             self.llm = ChatAnthropic(
                 model=config.LLM_MODEL,
                 temperature=config.TEMPERATURE,
                 api_key=config.ANTHROPIC_API_KEY
             )
         else:
-            raise ValueError("No LLM API key configured")
+            raise ValueError(f"Invalid LLM_API_TYPE: {config.LLM_API_TYPE}")
         
         # Common parking features
         self.known_features = [

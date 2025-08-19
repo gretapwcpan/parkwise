@@ -58,19 +58,63 @@ Query → Parse Intent → Extract Entities → Map to Filters → Validate → 
 
 ### 1. Environment Setup
 
-Create `.env` file in `/llm-service/`:
-```env
-OPENAI_API_KEY=your_openai_api_key_here
-# Or use Anthropic
-# ANTHROPIC_API_KEY=your_anthropic_api_key_here
+**All API keys are now managed in a single location: `/backend/.env`**
 
+Update your `/backend/.env` file with one of the following configurations:
+
+#### Option 1: OpenAI (Default)
+```env
+# Existing configuration...
+MAPBOX_ACCESS_TOKEN=your_mapbox_token_here
+FIREBASE_SERVICE_ACCOUNT_KEY=path/to/firebase-key.json
+
+# LLM Configuration
+OPENAI_API_KEY=your_openai_api_key_here
 LLM_MODEL=gpt-4
-PORT=8001
-HOST=0.0.0.0
-DEBUG=true
-ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
-LOG_LEVEL=INFO
 ```
+
+#### Option 2: Anthropic
+```env
+# LLM Configuration
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+LLM_MODEL=claude-3-sonnet-20240229
+```
+
+#### Option 3: OpenAI-Compatible APIs
+```env
+# LLM Configuration
+LLM_API_TYPE=openai-compatible
+LLM_API_BASE_URL=https://api.together.xyz/v1  # Your API endpoint
+LLM_API_KEY=your_api_key_here
+LLM_MODEL=meta-llama/Llama-2-70b-chat-hf  # Your model name
+```
+
+**Popular OpenAI-Compatible Providers:**
+
+- **Ollama (Local)**: 
+  ```env
+  LLM_API_BASE_URL=http://localhost:11434/v1
+  LLM_API_KEY=ollama
+  LLM_MODEL=llama2
+  ```
+
+- **Together AI**:
+  ```env
+  LLM_API_BASE_URL=https://api.together.xyz/v1
+  LLM_API_KEY=your_together_api_key
+  LLM_MODEL=meta-llama/Llama-2-70b-chat-hf
+  ```
+
+- **Groq**:
+  ```env
+  LLM_API_BASE_URL=https://api.groq.com/openai/v1
+  LLM_API_KEY=your_groq_api_key
+  LLM_MODEL=mixtral-8x7b-32768
+  ```
+
+The LLM service will automatically inherit these environment variables through Docker Compose.
+
+**Note**: The `/llm-service/.env.example` file is kept for reference but API keys should be set in `/backend/.env`.
 
 ### 2. Running with Docker Compose
 
@@ -227,6 +271,11 @@ const NaturalLanguageSearch = () => {
    - Check port configurations
    - Verify network connectivity between services
 
+4. **API Key Issues**
+   - Verify API keys are set in `/backend/.env` (not in `/llm-service/.env`)
+   - Check that docker-compose.yml is using the correct env_file path
+   - Restart services after updating environment variables
+
 ## Future Enhancements
 
 1. **Database Integration**
@@ -252,8 +301,10 @@ const NaturalLanguageSearch = () => {
 
 1. **API Keys**
    - Never commit API keys to version control
+   - All API keys are centralized in `/backend/.env`
    - Use environment variables
    - Rotate keys regularly
+   - The unified configuration reduces the risk of key exposure
 
 2. **Input Validation**
    - Sanitize user queries
