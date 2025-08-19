@@ -10,11 +10,13 @@ A cross-platform parking space booking system with real-time navigation, booking
 - **Admin Dashboard**: Manual moderation for booking approvals/rejections
 - **Cross-platform**: Works on both web and mobile browsers
 - **Progressive Web App**: Installable on mobile devices
+- **Natural Language Search**: AI-powered search using LangGraph - "Find parking near Taipei 101 under $10"
 
 ## Architecture
 
 - **Frontend**: React with Mapbox GL JS
 - **Backend**: Node.js with Express and Socket.io
+- **LLM Service**: Python FastAPI with LangGraph for natural language processing
 - **Database**: Firebase Firestore (with in-memory fallback)
 - **Notifications**: Firebase Cloud Messaging
 - **Real-time**: Socket.io for live updates
@@ -22,9 +24,11 @@ A cross-platform parking space booking system with real-time navigation, booking
 ## Prerequisites
 
 - Node.js (v14 or higher)
+- Python 3.9+ (for Natural Language Search feature)
 - npm or yarn
 - Mapbox account for map token (free tier available)
 - Firebase project (optional - system works with mock data)
+- OpenAI or Anthropic API key (for Natural Language Search)
 
 ## Setup Instructions
 
@@ -99,6 +103,7 @@ Edit `backend/.env` file with your credentials:
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:3001
 - Admin Dashboard: http://localhost:3002
+- LLM Service (Natural Language Search): http://localhost:8001
 
 ## Available Commands
 
@@ -207,6 +212,16 @@ MAPBOX_TOKEN=your_mapbox_token_here
 FIREBASE_PROJECT_ID=your_project_id
 FIREBASE_PRIVATE_KEY=your_private_key
 FIREBASE_CLIENT_EMAIL=your_client_email
+LLM_SERVICE_URL=http://localhost:8001
+```
+
+### LLM Service (.env)
+```
+OPENAI_API_KEY=your_openai_api_key_here
+# Or use Anthropic
+# ANTHROPIC_API_KEY=your_anthropic_api_key_here
+LLM_MODEL=gpt-4
+PORT=8001
 ```
 
 ### Frontend
@@ -267,6 +282,7 @@ Modify `frontend/src/components/MapView.js` to change map appearance and behavio
 ### 📋 Planning & Architecture
 - [LLM Integration Ideas](docs/planning/LLM_INTEGRATION_IDEAS.md) - AI/LLM features brainstorming
 - [LLM Implementation Plan](docs/planning/LLM_IMPLEMENTATION_PLAN.md) - Detailed implementation for intelligent features
+- [Natural Language Search Guide](docs/planning/NL_SEARCH_IMPLEMENTATION_GUIDE.md) - Complete guide for the AI-powered search feature
 - [Project Names](docs/planning/PROJECT_NAMES.md) - Branding and naming suggestions
 
 ## License

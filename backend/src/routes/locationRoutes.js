@@ -3,6 +3,7 @@ const router = express.Router();
 const locationService = require('../services/locationService');
 const notificationService = require('../services/notificationService');
 const geocodingService = require('../services/geocodingService');
+const nlSearchService = require('../services/nlSearchService');
 
 // Get all active locations
 router.get('/active', async (req, res) => {
@@ -268,6 +269,121 @@ router.get('/parking-spots-enriched', async (req, res) => {
     res.json({ parkingSpots: enrichedSpots });
   } catch (error) {
     console.error('Get enriched parking spots error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Natural language search endpoint
+router.post('/search/natural', async (req, res) => {
+  try {
+    const { query, userLocation, language } = req.body;
+    
+    if (!query) {
+      return res.status(400).json({ 
+        error: 'Search query is required' 
+      });
+    }
+    
+    // Parse the natural language query
+    const parseResult = await nlSearchService.parseSearchQuery(
+      query,
+      userLocation,
+      language
+    );
+    
+    // If parsing was successful, perform the search
+    if (parseResult.success && parseResult.filters) {
+      // Convert filters to search parameters
+      const searchParams = nlSearchService.formatFiltersForSearch(parseResult.filters);
+      
+      // In a real implementation, you would search the database here
+      // For now, return the parsed result with mock parking spots
+      const mockResults = [];
+      
+      if (searchParams.lat && searchParams.lng) {
+        // Add some mock results based on location
+        mockResults.push(
+          {
+            id: 1,
+            name: 'Premium Parking Spot',
+            lat: searchParams.lat + 0.001,
+            lng: searchParams.lng + 0.001,
+            price: 8,
+            features: ['covered', 'ev_charging'],
+            available: true,
+            distance: 150
+          },
+          {
+            id: 2,
+            name: 'Budget Parking',
+            lat: searchParams.lat - 0.002,
+            lng: searchParams.lng + 0.002,
+            price: 3,
+            features: ['uncovered'],
+            available: true,
+            distance: 300
+          }
+        );
+        
+        // Filter by price if specified
+        if (searchParams.maxPrice) {
+          mockResults.filter(spot => spot.price <= searchParams.maxPrice);
+        }
+        
+        // Filter by features if specified
+        if (searchParams.features && searchParams.features.length > 0) {
+          mockResults.filter(spot => 
+            searchParams.features.some(feature => spot.features.includes(feature))
+          );
+        }
+      }
+      
+      res.json({
+        success: true,
+        query: parseResult.original_query,
+        explanation: parseResult.explanation,
+        filters: parseResult.filters,
+        results: mockResults,
+        totalResults: mockResults.length
+      });
+    } else {
+      // Return the parse error
+      res.json({
+        success: false,
+        query: parseResult.original_query,
+        error: parseResult.error || 'Failed to parse search query',
+        filters: {},
+        results: [],
+        totalResults: 0
+      });
+    }
+  } catch (error) {
+    console.error('Natural language search error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get natural language search examples
+router.get('/search/examples', async (req, res) => {
+  try {
+    const examples = await nlSearchService.getExamples();
+    res.json({ examples });
+  } catch (error) {
+    console.error('Get search examples error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Check LLM service health
+router.get('/search/health', async (req, res) => {
+  try {
+    const isHealthy = await nlSearchService.checkHealth();
+    res.json({ 
+      llmServiceHealthy: isHealthy,
+      message: isHealthy ? 'LLM service is operational' : 'LLM service is unavailable'
+    });
+  } catch (error) {
+    console.error('LLM health check error:', error);
     res.status(500).json({ error: error.message });
   }
 });

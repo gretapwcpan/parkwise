@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # Node.js Backend Service
+  backend:
+    build: ./backend
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - LLM_SERVICE_URL=http://llm-service:8001
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    depends_on:
+      - llm-service
+    networks:
+      - parking-network
+
+  # Python LLM Service
+  llm-service:
+    build: ./llm-service
+    ports:
+      - "8001:8001"
+    environment:
+      - PORT=8001
+      - HOST=0.0.0.0
+      - DEBUG=true
+      - LOG_LEVEL=INFO
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
+      # Add your API keys here or use .env file
+      # - OPENAI_API_KEY=${OPENAI_API_KEY}
+      # - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    env_file:
+      - ./llm-service/.env
+    volumes:
+      - ./llm-service:/app
+    networks:
+      - parking-network
+
+  # Frontend Service (optional)
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:3001
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - parking-network
+
+networks:
+  parking-network:
+    driver: bridge
