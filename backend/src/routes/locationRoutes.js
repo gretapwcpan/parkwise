@@ -4,6 +4,7 @@ const locationService = require('../services/locationService');
 const notificationService = require('../services/notificationService');
 const geocodingService = require('../services/geocodingService');
 const nlSearchService = require('../services/nlSearchService');
+const parkingSpotService = require('../services/parkingSpotService');
 
 // Get all active locations
 router.get('/active', async (req, res) => {
@@ -253,18 +254,160 @@ router.get('/surrounding-info', async (req, res) => {
   }
 });
 
+// Get parking spots within radius
+router.get('/parking-spots/radius', async (req, res) => {
+  try {
+    const { lat, lng, radius, available, maxPrice, minPrice, type, features } = req.query;
+    
+    if (!lat || !lng) {
+      return res.status(400).json({ 
+        error: 'Latitude (lat) and longitude (lng) parameters are required' 
+      });
+    }
+    
+    const latitude = parseFloat(lat);
+    const longitude = parseFloat(lng);
+    const radiusMeters = radius ? parseInt(radius) : 1000; // Default 1km
+    
+    // Build filters object
+    const filters = {};
+    if (available !== undefined) {
+      filters.available = available === 'true';
+    }
+    if (maxPrice) {
+      filters.maxPrice = parseFloat(maxPrice);
+    }
+    if (minPrice) {
+      filters.minPrice = parseFloat(minPrice);
+    }
+    if (type) {
+      filters.type = type;
+    }
+    if (features) {
+      filters.features = Array.isArray(features) ? features : [features];
+    }
+    
+    const parkingSpots = parkingSpotService.getParkingSpotsInRadius(
+      latitude,
+      longitude,
+      radiusMeters,
+      filters
+    );
+    
+    res.json({ 
+      success: true,
+      center: { lat: latitude, lng: longitude },
+      radius: radiusMeters,
+      totalSpots: parkingSpots.length,
+      parkingSpots 
+    });
+  } catch (error) {
+    console.error('Get parking spots in radius error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get parking spot statistics for an area
+router.get('/parking-spots/statistics', async (req, res) => {
+  try {
+    const { lat, lng, radius } = req.query;
+    
+    if (!lat || !lng) {
+      return res.status(400).json({ 
+        error: 'Latitude (lat) and longitude (lng) parameters are required' 
+      });
+    }
+    
+    const latitude = parseFloat(lat);
+    const longitude = parseFloat(lng);
+    const radiusMeters = radius ? parseInt(radius) : 1000;
+    
+    const statistics = parkingSpotService.getAreaStatistics(
+      latitude,
+      longitude,
+      radiusMeters
+    );
+    
+    res.json({ 
+      success: true,
+      center: { lat: latitude, lng: longitude },
+      radius: radiusMeters,
+      statistics 
+    });
+  } catch (error) {
+    console.error('Get parking statistics error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get a specific parking spot by ID
+router.get('/parking-spots/:spotId', async (req, res) => {
+  try {
+    const { spotId } = req.params;
+    const spot = parkingSpotService.getParkingSpotById(spotId);
+    
+    if (!spot) {
+      return res.status(404).json({ error: 'Parking spot not found' });
+    }
+    
+    res.json({ success: true, parkingSpot: spot });
+  } catch (error) {
+    console.error('Get parking spot error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update parking spot availability
+router.patch('/parking-spots/:spotId/availability', async (req, res) => {
+  try {
+    const { spotId } = req.params;
+    const { available } = req.body;
+    
+    if (available === undefined) {
+      return res.status(400).json({ error: 'Available status is required' });
+    }
+    
+    const updatedSpot = parkingSpotService.updateAvailability(spotId, available);
+    
+    if (!updatedSpot) {
+      return res.status(404).json({ error: 'Parking spot not found' });
+    }
+    
+    // Emit update to all connected clients via Socket.io
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('parking-spot-update', updatedSpot);
+    }
+    
+    res.json({ success: true, parkingSpot: updatedSpot });
+  } catch (error) {
+    console.error('Update parking spot availability error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Get enriched parking spots with address information
 router.get('/parking-spots-enriched', async (req, res) => {
   try {
-    // In a real app, you would fetch parking spots from database
-    // For now, using mock data
-    const mockParkingSpots = [
-      { id: 1, name: 'Spot A', lat: 25.0330, lng: 121.5654, available: true },
-      { id: 2, name: 'Spot B', lat: 25.0340, lng: 121.5664, available: false },
-      { id: 3, name: 'Spot C', lat: 25.0320, lng: 121.5644, available: true }
-    ];
+    const { lat, lng, radius } = req.query;
     
-    const enrichedSpots = await geocodingService.enrichParkingSpots(mockParkingSpots);
+    if (!lat || !lng) {
+      return res.status(400).json({ 
+        error: 'Latitude (lat) and longitude (lng) parameters are required' 
+      });
+    }
+    
+    const latitude = parseFloat(lat);
+    const longitude = parseFloat(lng);
+    const radiusMeters = radius ? parseInt(radius) : 1000;
+    
+    const parkingSpots = parkingSpotService.getParkingSpotsInRadius(
+      latitude,
+      longitude,
+      radiusMeters
+    );
+    
+    const enrichedSpots = await geocodingService.enrichParkingSpots(parkingSpots);
     
     res.json({ parkingSpots: enrichedSpots });
   } catch (error) {
@@ -300,72 +443,19 @@ router.post('/search/natural', async (req, res) => {
     // Convert filters to search parameters
     const searchParams = nlSearchService.formatFiltersForSearch(parseResult.filters || {});
     
-    // Generate mock results
-    const mockResults = [];
+    // Use the new parking spot service to get real data
+    const parkingSpots = parkingSpotService.searchWithNLParams(searchParams, userLocation || { lat: 25.0330, lng: 121.5654 });
     
-    // Use user location if no specific location was parsed
-    const searchLat = searchParams.lat || (userLocation ? userLocation.lat : 25.0330);
-    const searchLng = searchParams.lng || (userLocation ? userLocation.lng : 121.5654);
-    
-    // Always add some mock results
-    mockResults.push(
-      {
-        id: 1,
-        name: 'Premium Parking Spot',
-        lat: searchLat + 0.001,
-        lng: searchLng + 0.001,
-        price: 8,
-        features: ['covered', 'ev_charging'],
-        available: true,
-        distance: 150
-      },
-      {
-        id: 2,
-        name: 'Budget Parking',
-        lat: searchLat - 0.002,
-        lng: searchLng + 0.002,
-        price: 3,
-        features: ['uncovered'],
-        available: true,
-        distance: 300
-      },
-      {
-        id: 3,
-        name: 'Standard Parking',
-        lat: searchLat + 0.002,
-        lng: searchLng - 0.001,
-        price: 5,
-        features: ['covered'],
-        available: true,
-        distance: 200
-      }
-    );
-    
-    // Apply filters
-    let filteredResults = [...mockResults];
-    
-    // Filter by price if specified
-    if (searchParams.maxPrice) {
-      filteredResults = filteredResults.filter(spot => spot.price <= searchParams.maxPrice);
-    }
-    
-    // Filter by features if specified
-    if (searchParams.features && searchParams.features.length > 0) {
-      filteredResults = filteredResults.filter(spot => 
-        searchParams.features.some(feature => spot.features.includes(feature))
-      );
-    }
-    
-    // Sort by distance
-    filteredResults.sort((a, b) => a.distance - b.distance);
+    // Limit results for voice response
+    const limitedResults = parkingSpots.slice(0, 10);
     
     res.json({
       success: true,
       query: query,
-      explanation: parseResult.explanation || `Found ${filteredResults.length} parking spots matching your request`,
+      explanation: parseResult.explanation || `Found ${limitedResults.length} parking spots matching your request`,
       filters: parseResult.filters || {},
-      results: filteredResults,
-      totalResults: filteredResults.length
+      results: limitedResults,
+      totalResults: limitedResults.length
     });
   } catch (error) {
     console.error('Natural language search error:', error);

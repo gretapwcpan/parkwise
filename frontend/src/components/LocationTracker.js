@@ -52,6 +52,23 @@ const LocationTracker = ({ userId, onLocationUpdate }) => {
       (error) => {
         console.error('Initial location error:', error);
         setError(error.message);
+        
+        // Use default location (Taipei 101 area) when geolocation fails
+        const defaultLocation = {
+          latitude: 25.0330,
+          longitude: 121.5654,
+          accuracy: 100,
+          heading: null,
+          speed: 0,
+        };
+        
+        console.log('Using default location:', defaultLocation);
+        sendLocationUpdate(defaultLocation);
+        setLastLocation(defaultLocation);
+        
+        if (onLocationUpdate) {
+          onLocationUpdate(defaultLocation);
+        }
       },
       {
         enableHighAccuracy: true,
@@ -85,6 +102,25 @@ const LocationTracker = ({ userId, onLocationUpdate }) => {
       (error) => {
         console.error('Location error:', error);
         setError(error.message);
+        
+        // Use default location when tracking fails
+        const defaultLocation = {
+          latitude: 25.0330,
+          longitude: 121.5654,
+          accuracy: 100,
+          heading: null,
+          speed: 0,
+        };
+        
+        if (!lastLocation) {
+          console.log('Using default location for tracking:', defaultLocation);
+          sendLocationUpdate(defaultLocation);
+          setLastLocation(defaultLocation);
+          
+          if (onLocationUpdate) {
+            onLocationUpdate(defaultLocation);
+          }
+        }
         
         // If real GPS fails, start simulation for demo
         if (error.code === 1) { // Permission denied
