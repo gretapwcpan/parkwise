@@ -48,7 +48,7 @@ app.use('/api/', limiter);
 
 // Routes
 app.use('/api/bookings', bookingRoutes);
-app.use('/api/location', locationRoutes);
+app.use('/api/locations', locationRoutes);
 app.use('/api/notifications', notificationRoutes);
 
 // Health check endpoint

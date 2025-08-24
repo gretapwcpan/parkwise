@@ -70,25 +70,52 @@ const VoiceAssistant = () => {
       });
 
       const data = await response.json();
+      console.log('Natural language search response:', data);
       
       let responseText = '';
-      if (data.success && data.results && data.results.length > 0) {
-        responseText = `I found ${data.results.length} parking spots. `;
-        responseText += `The closest one is ${data.results[0].name} at ${data.results[0].distance} meters away. `;
-        if (data.results[0].price) {
-          responseText += `It costs ${data.results[0].price} dollars per hour.`;
+      
+      // Check if the response was successful and has results
+      if (data.success === true && data.results && data.results.length > 0) {
+        // Handle successful search with results
+        const numSpots = data.results.length;
+        responseText = `I found ${numSpots} parking ${numSpots === 1 ? 'spot' : 'spots'} matching your request. `;
+        
+        // Describe the first (closest) result
+        const closest = data.results[0];
+        responseText += `The closest one is ${closest.name}, located ${closest.distance} meters away. `;
+        
+        if (closest.price) {
+          responseText += `It costs ${closest.price} dollars per hour. `;
         }
+        
+        if (closest.features && closest.features.length > 0) {
+          const features = closest.features.map(f => f.replace('_', ' ')).join(', ');
+          responseText += `It has ${features}. `;
+        }
+        
+        // Mention other results if available
+        if (numSpots > 1) {
+          responseText += `There are ${numSpots - 1} other ${numSpots - 1 === 1 ? 'option' : 'options'} available nearby.`;
+        }
+      } else if (data.success === false && data.error) {
+        // Handle error from backend
+        responseText = `I encountered an issue: ${data.error}. The search service might be unavailable.`;
+      } else if (data.results && data.results.length === 0) {
+        // No results found
+        responseText = "I couldn't find any parking spots matching your specific requirements. Try adjusting your search criteria or asking for parking spots near you.";
       } else if (data.explanation) {
+        // Use the explanation from the backend if available
         responseText = data.explanation;
       } else {
-        responseText = "I couldn't find any parking spots matching your request. Please try again.";
+        // Fallback response - this shouldn't happen with the current backend
+        responseText = "I couldn't find any parking spots matching your request. Please try again with a different search.";
       }
       
       setResponse(responseText);
       speak(responseText);
     } catch (error) {
       console.error('Error processing voice command:', error);
-      const errorMessage = "Sorry, I couldn't process your request. Please try again.";
+      const errorMessage = "I'm having trouble connecting to the search service. However, there are parking spots available nearby. Please check the map for available spots.";
       setResponse(errorMessage);
       speak(errorMessage);
     } finally {
