@@ -4,6 +4,7 @@ import BookingPanel from './components/BookingPanel';
 import LocationTracker from './components/LocationTracker';
 import NotificationHandler from './components/NotificationHandler';
 import SurroundingInfo from './components/SurroundingInfo';
+import VoiceAssistant from './components/VoiceAssistant';
 import { SocketProvider } from './services/socketService';
 import { ApiProvider } from './services/apiService';
 import './App.css';
@@ -73,6 +74,7 @@ function App() {
           <LocationTracker userId={user.id} onLocationUpdate={setUserLocation} />
           <NotificationHandler userId={user.id} />
           <SurroundingInfo userLocation={userLocation} />
+          <VoiceAssistant />
         </div>
       </SocketProvider>
     </ApiProvider>
