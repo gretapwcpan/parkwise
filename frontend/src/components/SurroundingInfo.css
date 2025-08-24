@@ -1,6 +1,6 @@
 .surrounding-info {
   position: absolute;
-  top: 20px;
+  bottom: 20px;
   right: 20px;
   background: white;
   border-radius: 8px;
@@ -190,7 +190,7 @@
 /* Mobile responsiveness */
 @media (max-width: 768px) {
   .surrounding-info {
-    top: 10px;
+    bottom: 10px;
     right: 10px;
     left: 10px;
     max-width: none;

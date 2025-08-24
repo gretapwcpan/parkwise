@@ -29,6 +29,38 @@ const LocationTracker = ({ userId, onLocationUpdate }) => {
     setTracking(true);
     setError(null);
 
+    // Get initial position immediately
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const location = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+          heading: position.coords.heading,
+          speed: position.coords.speed,
+        };
+
+        console.log('Initial location obtained:', location);
+        sendLocationUpdate(location);
+        setLastLocation(location);
+        
+        // Call the callback to update parent component
+        if (onLocationUpdate) {
+          onLocationUpdate(location);
+        }
+      },
+      (error) => {
+        console.error('Initial location error:', error);
+        setError(error.message);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
+
+    // Then watch for changes
     const id = navigator.geolocation.watchPosition(
       (position) => {
         const location = {

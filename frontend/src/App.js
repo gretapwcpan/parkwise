@@ -13,19 +13,15 @@ function App() {
   const [selectedSpot, setSelectedSpot] = useState(null);
   const [activeBooking, setActiveBooking] = useState(null);
   const [showBookingPanel, setShowBookingPanel] = useState(false);
-  const [userLocation, setUserLocation] = useState({
-    latitude: 25.0330,
-    longitude: 121.5654,
-    accuracy: 10
-  });
+  const [userLocation, setUserLocation] = useState(null);
 
-  // Mock parking spots for demo
-  const parkingSpots = [
-    { id: 'spot-1', name: 'Spot A1', lat: 25.0330, lng: 121.5654, available: true },
-    { id: 'spot-2', name: 'Spot A2', lat: 25.0335, lng: 121.5659, available: true },
-    { id: 'spot-3', name: 'Spot B1', lat: 25.0340, lng: 121.5664, available: false },
-    { id: 'spot-4', name: 'Spot B2', lat: 25.0345, lng: 121.5669, available: true },
-  ];
+  // Generate parking spots near user's location (will update when location is available)
+  const parkingSpots = userLocation ? [
+    { id: 'spot-1', name: 'Spot A1', lat: userLocation.latitude + 0.002, lng: userLocation.longitude + 0.002, available: true },
+    { id: 'spot-2', name: 'Spot A2', lat: userLocation.latitude + 0.0025, lng: userLocation.longitude + 0.0025, available: true },
+    { id: 'spot-3', name: 'Spot B1', lat: userLocation.latitude - 0.002, lng: userLocation.longitude + 0.002, available: false },
+    { id: 'spot-4', name: 'Spot B2', lat: userLocation.latitude - 0.0025, lng: userLocation.longitude - 0.0025, available: true },
+  ] : [];
 
   const handleSpotSelect = (spot) => {
     setSelectedSpot(spot);
@@ -53,6 +49,7 @@ function App() {
               onSpotSelect={handleSpotSelect}
               selectedSpot={selectedSpot}
               userId={user.id}
+              userLocation={userLocation}
             />
 
             {showBookingPanel && selectedSpot && (

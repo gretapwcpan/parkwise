@@ -31,6 +31,8 @@
   font-size: 24px;
   cursor: pointer;
   transition: transform 0.2s;
+  /* Ensure markers are not positioned absolutely */
+  position: relative !important;
 }
 
 .marker:hover {
@@ -46,26 +48,13 @@
   opacity: 0.6;
 }
 
-.user-marker {
-  font-size: 28px;
-  animation: pulse 2s infinite;
-}
+/* Remove the user-marker class as MapLibre handles positioning */
 
 .other-user-marker {
   font-size: 20px;
 }
 
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
+/* Removed pulse animation to prevent vibrating effect */
 
 /* Mapbox popup styles */
 .mapboxgl-popup-content {

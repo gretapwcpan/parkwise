@@ -14,19 +14,19 @@ A cross-platform parking space booking system with real-time navigation, booking
 
 ## Architecture
 
-- **Frontend**: React with Mapbox GL JS
+- **Frontend**: React with MapLibre GL JS and OpenStreetMap
 - **Backend**: Node.js with Express and Socket.io
 - **LLM Service**: Python FastAPI with LangGraph for natural language processing
 - **Database**: Firebase Firestore (with in-memory fallback)
 - **Notifications**: Firebase Cloud Messaging
 - **Real-time**: Socket.io for live updates
+- **Maps & Geocoding**: OpenStreetMap (no API keys required)
 
 ## Prerequisites
 
 - Node.js (v14 or higher)
 - Python 3.9+ (for Natural Language Search feature)
 - npm or yarn
-- Mapbox account for map token (free tier available)
 - Firebase project (optional - system works with mock data)
 - OpenAI or Anthropic API key (for Natural Language Search)
 
@@ -94,9 +94,9 @@ npm run dev
 ### 3. Configure Environment
 
 Edit `backend/.env` file with your credentials:
-- Add your Mapbox token (required)
-- (Optional) Add Firebase credentials
-- Leave Firebase empty to use mock data
+- (Optional) Add Firebase credentials for database
+- (Optional) Add OpenAI/Anthropic API key for natural language search
+- The app works without any API keys using OpenStreetMap
 
 ### 4. Access the Applications
 
@@ -208,7 +208,6 @@ Test on various devices and browsers:
 ### Backend (.env)
 ```
 PORT=3001
-MAPBOX_TOKEN=your_mapbox_token_here
 FIREBASE_PROJECT_ID=your_project_id
 FIREBASE_PRIVATE_KEY=your_private_key
 FIREBASE_CLIENT_EMAIL=your_client_email
@@ -225,14 +224,14 @@ PORT=8001
 ```
 
 ### Frontend
-- Mapbox token is configured in MapView.js
+- Map uses OpenStreetMap tiles (no configuration needed)
 - API endpoints are configured in apiService.js
 
 ## Troubleshooting
 
 ### Map not loading
-- Check Mapbox token in backend .env file
-- Verify token is valid at mapbox.com
+- Check internet connection (OpenStreetMap tiles load from web)
+- Verify backend server is running on port 3001
 
 ### Bookings not saving
 - Check backend console for errors
@@ -273,11 +272,10 @@ Modify `frontend/src/components/MapView.js` to change map appearance and behavio
 
 ### 📚 Features Documentation
 - [Surrounding Information Feature](docs/features/SURROUNDING_INFO_FEATURE.md) - GPS-based location info and nearby places
-- [Map Style Options](docs/features/MAP_STYLE_OPTIONS.md) - Mapbox styling guide and comparisons
 - [Test Surrounding Info](docs/features/test-surrounding-info.html) - HTML test page for location features
 
 ### 🛠️ Setup Guides
-- [Mapbox Setup Guide](docs/setup/MAPBOX_SETUP_GUIDE.md) - Complete guide for setting up Mapbox with parks and streets
+- [OpenStreetMap Setup Guide](docs/setup/OPENSTREETMAP_SETUP_GUIDE.md) - Complete guide for OpenStreetMap integration
 
 ### 📋 Planning & Architecture
 - [LLM Integration Ideas](docs/planning/LLM_INTEGRATION_IDEAS.md) - AI/LLM features brainstorming
