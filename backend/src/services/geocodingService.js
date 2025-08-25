@@ -104,18 +104,30 @@ const geocodingService = {
         'restaurant': 'amenity=restaurant',
         'cafe': 'amenity=cafe',
         'fuel': 'amenity=fuel',
-        'shop': 'shop=*',
+        'shop': 'shop',  // Use just 'shop' without =* for any shop type
         'parking': 'amenity=parking'
       };
       
-      const tag = categoryToTag[category] || 'amenity=*';
+      const tag = categoryToTag[category] || 'amenity';
+      
+      // Build the query based on whether we need a specific value or any value
+      let nodeQuery, wayQuery;
+      if (tag.includes('=')) {
+        // Specific tag value (e.g., amenity=restaurant)
+        nodeQuery = `node[${tag}](around:${radius},${latitude},${longitude});`;
+        wayQuery = `way[${tag}](around:${radius},${latitude},${longitude});`;
+      } else {
+        // Any value for the tag (e.g., shop for any shop type)
+        nodeQuery = `node[${tag}](around:${radius},${latitude},${longitude});`;
+        wayQuery = `way[${tag}](around:${radius},${latitude},${longitude});`;
+      }
       
       // Overpass API query
       const query = `
         [out:json][timeout:25];
         (
-          node[${tag}](around:${radius},${latitude},${longitude});
-          way[${tag}](around:${radius},${latitude},${longitude});
+          ${nodeQuery}
+          ${wayQuery}
         );
         out body;
         >;

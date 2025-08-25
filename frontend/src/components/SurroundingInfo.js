@@ -19,7 +19,7 @@ const SurroundingInfo = ({ userLocation }) => {
     setError(null);
     
     try {
-      const response = await axios.get('http://localhost:3001/api/location/surrounding-info', {
+      const response = await axios.get('http://localhost:3001/api/locations/surrounding-info', {
         params: {
           lat: userLocation.latitude,
           lng: userLocation.longitude
