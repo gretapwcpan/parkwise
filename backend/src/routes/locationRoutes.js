@@ -257,7 +257,7 @@ router.get('/surrounding-info', async (req, res) => {
 // Get parking spots within radius
 router.get('/parking-spots/radius', async (req, res) => {
   try {
-    const { lat, lng, radius, available, maxPrice, minPrice, type, features } = req.query;
+    const { lat, lng, radius, available, maxPrice, minPrice, type, features, useOSM } = req.query;
     
     if (!lat || !lng) {
       return res.status(400).json({ 
@@ -268,6 +268,7 @@ router.get('/parking-spots/radius', async (req, res) => {
     const latitude = parseFloat(lat);
     const longitude = parseFloat(lng);
     const radiusMeters = radius ? parseInt(radius) : 1000; // Default 1km
+    const shouldUseOSM = useOSM !== 'false'; // Default to true
     
     // Build filters object
     const filters = {};
@@ -287,11 +288,12 @@ router.get('/parking-spots/radius', async (req, res) => {
       filters.features = Array.isArray(features) ? features : [features];
     }
     
-    const parkingSpots = parkingSpotService.getParkingSpotsInRadius(
+    const parkingSpots = await parkingSpotService.getParkingSpotsInRadius(
       latitude,
       longitude,
       radiusMeters,
-      filters
+      filters,
+      shouldUseOSM
     );
     
     res.json({ 
@@ -299,6 +301,7 @@ router.get('/parking-spots/radius', async (req, res) => {
       center: { lat: latitude, lng: longitude },
       radius: radiusMeters,
       totalSpots: parkingSpots.length,
+      dataSource: shouldUseOSM ? 'mixed' : 'mock',
       parkingSpots 
     });
   } catch (error) {
@@ -310,7 +313,7 @@ router.get('/parking-spots/radius', async (req, res) => {
 // Get parking spot statistics for an area
 router.get('/parking-spots/statistics', async (req, res) => {
   try {
-    const { lat, lng, radius } = req.query;
+    const { lat, lng, radius, useOSM } = req.query;
     
     if (!lat || !lng) {
       return res.status(400).json({ 
@@ -321,11 +324,13 @@ router.get('/parking-spots/statistics', async (req, res) => {
     const latitude = parseFloat(lat);
     const longitude = parseFloat(lng);
     const radiusMeters = radius ? parseInt(radius) : 1000;
+    const shouldUseOSM = useOSM !== 'false'; // Default to true
     
-    const statistics = parkingSpotService.getAreaStatistics(
+    const statistics = await parkingSpotService.getAreaStatistics(
       latitude,
       longitude,
-      radiusMeters
+      radiusMeters,
+      shouldUseOSM
     );
     
     res.json({ 
@@ -401,7 +406,7 @@ router.get('/parking-spots-enriched', async (req, res) => {
     const longitude = parseFloat(lng);
     const radiusMeters = radius ? parseInt(radius) : 1000;
     
-    const parkingSpots = parkingSpotService.getParkingSpotsInRadius(
+    const parkingSpots = await parkingSpotService.getParkingSpotsInRadius(
       latitude,
       longitude,
       radiusMeters
@@ -444,7 +449,7 @@ router.post('/search/natural', async (req, res) => {
     const searchParams = nlSearchService.formatFiltersForSearch(parseResult.filters || {});
     
     // Use the new parking spot service to get real data
-    const parkingSpots = parkingSpotService.searchWithNLParams(searchParams, userLocation || { lat: 25.0330, lng: 121.5654 });
+    const parkingSpots = await parkingSpotService.searchWithNLParams(searchParams, userLocation || { lat: 25.0330, lng: 121.5654 });
     
     // Limit results for voice response
     const limitedResults = parkingSpots.slice(0, 10);

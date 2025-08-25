@@ -1,0 +1,123 @@
+/* Toast notification container */
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+/* Individual toast notification */
+.toast-notification {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 300px;
+  max-width: 400px;
+  pointer-events: auto;
+  animation: slideIn 0.3s ease-out;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.toast-notification:hover {
+  transform: translateX(-5px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Toast header */
+.toast-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.toast-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  flex: 1;
+}
+
+/* Toast close button */
+.toast-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 12px;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toast-close:hover {
+  opacity: 1;
+}
+
+/* Toast body */
+.toast-body {
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #333;
+  line-height: 1.5;
+}
+
+/* Animation for toast appearance */
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 480px) {
+  .toast-container {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+  }
+  
+  .toast-notification {
+    min-width: auto;
+    max-width: none;
+    width: 100%;
+  }
+}
+
+/* Dark mode support (optional) */
+@media (prefers-color-scheme: dark) {
+  .toast-notification {
+    background: #2d2d2d;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+  
+  .toast-body {
+    color: #e0e0e0;
+  }
+  
+  .toast-header {
+    background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+}

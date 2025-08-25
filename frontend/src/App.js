@@ -97,6 +97,7 @@ function App() {
             <div className="radius-selector">
               <label>Search Radius: </label>
               <select value={searchRadius} onChange={(e) => handleRadiusChange(parseInt(e.target.value))}>
+                <option value="500">100m</option>
                 <option value="500">500m</option>
                 <option value="1000">1km</option>
                 <option value="2000">2km</option>

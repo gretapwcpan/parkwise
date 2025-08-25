@@ -1,4 +1,5 @@
 const locationService = require('./locationService');
+const osmParkingService = require('./osmParkingService');
 
 // Mock database of parking spots (in production, this would come from a real database)
 // Using real coordinates around Taipei area for demonstration
@@ -44,17 +45,37 @@ const mockParkingSpots = [
 const parkingSpotService = {
   /**
    * Get all parking spots within a radius from a given location
+   * Combines mock data with real OpenStreetMap data
    * @param {number} lat - Latitude of the center point
    * @param {number} lng - Longitude of the center point
    * @param {number} radiusMeters - Radius in meters (default 1000m = 1km)
    * @param {Object} filters - Optional filters (available, maxPrice, features, type)
-   * @returns {Array} Array of parking spots with distance information
+   * @param {boolean} useOSM - Whether to fetch real OSM data (default true)
+   * @returns {Promise<Array>} Array of parking spots with distance information
    */
-  getParkingSpotsInRadius(lat, lng, radiusMeters = 1000, filters = {}) {
+  async getParkingSpotsInRadius(lat, lng, radiusMeters = 1000, filters = {}, useOSM = true) {
+    let allSpots = [...mockParkingSpots];
+    
+    // Fetch real OSM data if enabled
+    if (useOSM) {
+      try {
+        console.log(`Fetching real parking data from OpenStreetMap for radius ${radiusMeters}m...`);
+        const osmSpots = await osmParkingService.fetchParkingFromOSM(lat, lng, radiusMeters);
+        
+        if (osmSpots && osmSpots.length > 0) {
+          console.log(`Found ${osmSpots.length} parking spots from OpenStreetMap`);
+          // Merge OSM data with mock data
+          allSpots = osmParkingService.mergeWithExistingData(osmSpots, mockParkingSpots);
+        }
+      } catch (error) {
+        console.error('Failed to fetch OSM data, using mock data only:', error.message);
+      }
+    }
+    
     const spotsWithDistance = [];
     
     // Calculate distance for each parking spot
-    for (const spot of mockParkingSpots) {
+    for (const spot of allSpots) {
       const distance = locationService.calculateDistance(
         lat,
         lng,
@@ -133,10 +154,11 @@ const parkingSpotService = {
    * @param {number} lat - Latitude of the center point
    * @param {number} lng - Longitude of the center point
    * @param {number} radiusMeters - Radius in meters
-   * @returns {Object} Statistics about parking spots in the area
+   * @param {boolean} useOSM - Whether to fetch real OSM data (default true)
+   * @returns {Promise<Object>} Statistics about parking spots in the area
    */
-  getAreaStatistics(lat, lng, radiusMeters = 1000) {
-    const spotsInArea = this.getParkingSpotsInRadius(lat, lng, radiusMeters);
+  async getAreaStatistics(lat, lng, radiusMeters = 1000, useOSM = true) {
+    const spotsInArea = await this.getParkingSpotsInRadius(lat, lng, radiusMeters, {}, useOSM);
     
     const stats = {
       total: spotsInArea.length,
@@ -173,9 +195,9 @@ const parkingSpotService = {
    * Search parking spots with natural language query results
    * @param {Object} searchParams - Search parameters from NL processing
    * @param {Object} userLocation - User's current location
-   * @returns {Array} Array of matching parking spots
+   * @returns {Promise<Array>} Array of matching parking spots
    */
-  searchWithNLParams(searchParams, userLocation) {
+  async searchWithNLParams(searchParams, userLocation) {
     const lat = searchParams.lat || userLocation.lat;
     const lng = searchParams.lng || userLocation.lng;
     const radius = searchParams.radius || 1000;
