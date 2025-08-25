@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "parking": {
+      "command": "node",
+      "args": ["PATH_TO_YOUR_PROJECT/parking-space-prototype/mcp-server/server.js"],
+      "env": {
+        "BACKEND_URL": "http://localhost:3000",
+        "LLM_SERVICE_URL": "http://localhost:8001"
+      }
+    }
+  }
+}
