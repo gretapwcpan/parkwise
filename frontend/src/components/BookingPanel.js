@@ -45,9 +45,43 @@ const BookingPanel = ({ spot, userId, onClose, onBookingComplete }) => {
     setAlternativeSlot(null);
 
     try {
-      // Create start and end times
-      const startTime = new Date(`${selectedDate}T${selectedTime}`);
-      const endTime = new Date(startTime.getTime() + duration * 60 * 60 * 1000);
+      // Create start time based on selection
+      let startTime;
+      const now = new Date();
+      
+      // Check if selectedTime is a relative time option (1, 2, 3, 4)
+      if (selectedTime === '1') {
+        // in 10 minutes
+        startTime = new Date(now.getTime() + 10 * 60 * 1000);
+      } else if (selectedTime === '2') {
+        // in 30 minutes
+        startTime = new Date(now.getTime() + 30 * 60 * 1000);
+      } else if (selectedTime === '3') {
+        // in 1 hour
+        startTime = new Date(now.getTime() + 60 * 60 * 1000);
+      } else if (selectedTime === '4') {
+        // in 2 hours
+        startTime = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+      } else {
+        // It's a specific time in HH:MM format
+        startTime = new Date(`${selectedDate}T${selectedTime}`);
+      }
+      
+      // Calculate end time based on duration
+      let durationMs;
+      if (duration === 1) {
+        durationMs = 30 * 60 * 1000; // 30 minutes
+      } else if (duration === 2) {
+        durationMs = 60 * 60 * 1000; // 1 hour
+      } else if (duration === 3) {
+        durationMs = 2 * 60 * 60 * 1000; // 2 hours
+      } else if (duration === 4) {
+        durationMs = 3 * 60 * 60 * 1000; // 3 hours
+      } else {
+        durationMs = duration * 60 * 60 * 1000; // fallback to duration in hours
+      }
+      
+      const endTime = new Date(startTime.getTime() + durationMs);
 
       const bookingData = {
         spotId: spot.id,
@@ -143,7 +177,7 @@ const BookingPanel = ({ spot, userId, onClose, onBookingComplete }) => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="time">Time</label>
+              <label htmlFor="time">Expected Arrived Time</label>
               <select
                 id="time"
                 value={selectedTime}
@@ -151,6 +185,11 @@ const BookingPanel = ({ spot, userId, onClose, onBookingComplete }) => {
                 required
               >
                 <option value="">Select time</option>
+                <option value="1">in 10 minutes</option>
+                <option value="2">in 30 minutes</option>
+                <option value="3">in 1 hour</option>
+                <option value="4">in 2 hours</option>
+
                 {getAvailableTimeSlots().map(slot => (
                   <option key={slot.value} value={slot.value}>
                     {slot.label}
@@ -160,16 +199,16 @@ const BookingPanel = ({ spot, userId, onClose, onBookingComplete }) => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="duration">Duration (hours)</label>
+              <label htmlFor="duration">Stay Duration</label>
               <select
                 id="duration"
                 value={duration}
                 onChange={(e) => setDuration(Number(e.target.value))}
               >
-                <option value={1}>1 hour</option>
-                <option value={2}>2 hours</option>
-                <option value={3}>3 hours</option>
-                <option value={4}>4 hours</option>
+                <option value={1}>30 minutes</option>
+                <option value={2}>1 hour</option>
+                <option value={3}>2 hours</option>
+                <option value={4}>3 hours</option>
               </select>
             </div>
 

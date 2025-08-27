@@ -27,6 +27,20 @@
   opacity: 0.9;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+}
+
+.my-bookings-btn {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  transition: background-color 0.3s !important;
+}
+
+.my-bookings-btn:hover {
+  background-color: rgba(255, 255, 255, 0.3) !important;
+}
+
 /* Main content */
 .app-main {
   flex: 1;
@@ -197,14 +211,10 @@ label {
 
 /* Parking Statistics */
 .parking-statistics {
-  position: absolute;
-  top: 20px;
-  right: 20px;
+  /* Remove absolute positioning as it's handled by DraggablePanel */
   background: white;
   padding: 15px;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  z-index: 10;
   min-width: 200px;
 }
 

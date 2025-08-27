@@ -267,7 +267,7 @@ router.get('/parking-spots/radius', async (req, res) => {
     
     const latitude = parseFloat(lat);
     const longitude = parseFloat(lng);
-    const radiusMeters = radius ? parseInt(radius) : 1000; // Default 1km
+    const radiusMeters = radius ? parseInt(radius) : 500; // Default 500m
     const shouldUseOSM = useOSM !== 'false'; // Default to true
     
     // Build filters object

@@ -48,7 +48,7 @@ const parkingSpotService = {
    * Combines mock data with real OpenStreetMap data
    * @param {number} lat - Latitude of the center point
    * @param {number} lng - Longitude of the center point
-   * @param {number} radiusMeters - Radius in meters (default 1000m = 1km)
+   * @param {number} radiusMeters - Radius in meters (default 500m = 0.5km)
    * @param {Object} filters - Optional filters (available, maxPrice, features, type)
    * @param {boolean} useOSM - Whether to fetch real OSM data (default true)
    * @returns {Promise<Array>} Array of parking spots with distance information

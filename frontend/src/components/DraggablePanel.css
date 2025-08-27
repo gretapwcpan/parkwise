@@ -1,0 +1,153 @@
+.draggable-panel {
+  position: fixed;
+  z-index: 999;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  transition: none;
+}
+
+.drag-handle {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 8px 12px;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: grab;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.drag-handle-text {
+  flex: 1;
+  text-align: center;
+}
+
+.minimize-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 4px;
+  color: white;
+  padding: 2px 10px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1;
+  transition: background 0.2s;
+}
+
+.minimize-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.draggable-panel-content {
+  padding: 16px;
+  max-height: 500px;
+  overflow-y: auto;
+  min-height: 100px;
+}
+
+/* Minimized state */
+.draggable-panel-minimized {
+  position: fixed;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  z-index: 999;
+}
+
+.draggable-panel-minimized:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.draggable-panel-minimized:active {
+  cursor: grabbing;
+}
+
+.minimized-icon {
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Specific styles for statistics panel */
+.statistics-panel .draggable-panel-content {
+  padding: 0;
+}
+
+.statistics-panel .parking-statistics {
+  margin: 0;
+  padding: 16px;
+}
+
+.statistics-panel .parking-statistics h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 16px;
+  color: #333;
+}
+
+.statistics-panel .stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.statistics-panel .stat-item {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  background: #f7f8fa;
+  border-radius: 6px;
+}
+
+.statistics-panel .stat-label {
+  font-size: 11px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+/* Specific styles for location panel */
+.location-panel {
+  z-index: 1001; /* Higher than other panels */
+}
+
+.location-panel .draggable-panel-content {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.location-panel .drag-handle {
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+}
+
+.location-panel.draggable-panel-minimized {
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+}
+
+.location-panel.draggable-panel-minimized:hover {
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}

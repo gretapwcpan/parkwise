@@ -78,7 +78,7 @@ const tools = [
         },
         radius: {
           type: 'number',
-          description: 'Search radius in meters (optional, default: 1000)',
+          description: 'Search radius in meters (optional, default: 500)',
         },
       },
       required: ['location', 'startTime', 'duration'],

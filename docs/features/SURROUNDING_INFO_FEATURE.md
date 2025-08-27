@@ -121,7 +121,7 @@ The Mapbox token is required for the geocoding functionality to work properly.
    - Current street address
    - Nearby restaurants
    - Nearby cafes
-   - Gas stations within 1km
+   - Gas stations within 500m
    - Nearby shops
 
 ## Future Enhancements

@@ -110,13 +110,19 @@ const osmParkingService = {
       }
 
       // Determine availability (OSM doesn't provide real-time data)
-      // We'll use capacity if available, otherwise assume available
+      // Use a consistent availability based on ID to avoid random changes
       let available = true;
       let capacity = null;
       if (tags.capacity) {
         capacity = parseInt(tags.capacity);
-        // Simulate availability (in production, this would come from sensors)
-        available = Math.random() > 0.3; // 70% chance of being available
+        // Use a deterministic availability based on the element ID
+        // This ensures the same spot always has the same availability status
+        const hashCode = element.id.toString().split('').reduce((a, b) => {
+          a = ((a << 5) - a) + b.charCodeAt(0);
+          return a & a;
+        }, 0);
+        // About 75% of spots will be available
+        available = (Math.abs(hashCode) % 100) > 25;
       }
 
       // Estimate price (OSM rarely has price data)
@@ -142,10 +148,11 @@ const osmParkingService = {
         lng
       );
 
-      // Create parking spot object
+      // Create parking spot object with better naming
       const spot = {
         id: `osm-${element.type}-${element.id}`,
-        name: tags.name || tags.operator || `Parking ${element.id}`,
+        name: tags.name || tags.operator || tags['addr:street'] || 
+               `${type.charAt(0).toUpperCase() + type.slice(1)} Parking #${element.id.toString().slice(-4)}`,
         lat: lat,
         lng: lng,
         available: available,
@@ -178,41 +185,10 @@ const osmParkingService = {
    * @returns {Array} Fallback parking spots
    */
   getFallbackData(lat, lng, radius) {
-    // Return some basic mock data as fallback
-    const mockSpots = [
-      {
-        id: 'fallback-1',
-        name: 'Fallback Parking A',
-        lat: lat + 0.002,
-        lng: lng + 0.002,
-        available: true,
-        price: 25,
-        type: 'lot',
-        features: [],
-        source: 'fallback'
-      },
-      {
-        id: 'fallback-2',
-        name: 'Fallback Parking B',
-        lat: lat - 0.003,
-        lng: lng + 0.001,
-        available: true,
-        price: 30,
-        type: 'garage',
-        features: ['covered'],
-        source: 'fallback'
-      }
-    ];
-
-    // Calculate distances
-    return mockSpots.map(spot => {
-      const distance = locationService.calculateDistance(lat, lng, spot.lat, spot.lng);
-      return {
-        ...spot,
-        distance: Math.round(distance),
-        distanceKm: (distance / 1000).toFixed(2)
-      };
-    }).filter(spot => spot.distance <= radius);
+    // Return empty array instead of confusing fallback data
+    // The mock data from parkingSpotService will be used instead
+    console.log('OpenStreetMap unavailable, using local mock data only');
+    return [];
   },
 
   /**

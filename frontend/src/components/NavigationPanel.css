@@ -1,0 +1,495 @@
+.navigation-panel {
+  position: fixed;
+  right: 20px;
+  top: 80px;
+  width: 380px;
+  max-height: 80vh;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.navigation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #007cbf 0%, #0056b3 100%);
+  color: white;
+  border-radius: 12px 12px 0 0;
+}
+
+.navigation-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.close-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 20px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.navigation-setup {
+  padding: 20px;
+}
+
+.mode-selector {
+  margin-bottom: 20px;
+}
+
+.mode-selector label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 500;
+  color: #333;
+}
+
+.mode-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.mode-buttons button {
+  flex: 1;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  background: white;
+  border-radius: 8px;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mode-buttons button:hover {
+  border-color: #007cbf;
+  background: #f0f8ff;
+}
+
+.mode-buttons button.active {
+  border-color: #007cbf;
+  background: #007cbf;
+  transform: scale(1.05);
+}
+
+.calculate-route-btn {
+  width: 100%;
+  padding: 12px;
+  background: #007cbf;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.calculate-route-btn:hover {
+  background: #0056b3;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 124, 191, 0.3);
+}
+
+.loading-container {
+  padding: 40px;
+  text-align: center;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #007cbf;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-message {
+  padding: 20px;
+  background: #fff3cd;
+  border-left: 4px solid #ffc107;
+  margin: 16px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.error-message button {
+  margin-left: auto;
+  padding: 6px 12px;
+  background: #ffc107;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.error-message button:hover {
+  background: #e0a800;
+}
+
+.route-info {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 60px;
+}
+
+.route-summary {
+  padding: 16px 20px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.summary-item .label {
+  font-weight: 500;
+  color: #666;
+}
+
+.summary-item .value {
+  font-weight: 600;
+  color: #333;
+  font-size: 16px;
+}
+
+.navigation-controls {
+  padding: 16px 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.start-navigation-btn {
+  flex: 1;
+  padding: 12px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.start-navigation-btn:hover {
+  background: #218838;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.toggle-instructions-btn {
+  padding: 12px 16px;
+  background: #f8f9fa;
+  color: #333;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toggle-instructions-btn:hover {
+  background: #e9ecef;
+}
+
+.active-navigation {
+  padding: 20px;
+  background: #e8f5e9;
+  border-bottom: 2px solid #4caf50;
+}
+
+.current-instruction {
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.step-number {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.instruction-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.direction-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.instruction-text {
+  flex: 1;
+}
+
+.instruction-text strong {
+  color: #007cbf;
+  font-weight: 600;
+}
+
+.instruction-distance {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #666;
+}
+
+.navigation-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.navigation-buttons button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.navigation-buttons button:not(.stop-btn) {
+  background: white;
+  color: #333;
+}
+
+.navigation-buttons button:not(.stop-btn):hover:not(:disabled) {
+  background: #f8f9fa;
+}
+
+.navigation-buttons button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.navigation-buttons .stop-btn {
+  background: #dc3545;
+  color: white;
+}
+
+.navigation-buttons .stop-btn:hover {
+  background: #c82333;
+}
+
+.instructions-list {
+  padding: 20px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.instructions-list h4 {
+  margin: 0 0 16px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.instructions-list ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step-counter;
+}
+
+.instructions-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  transition: all 0.2s;
+  counter-increment: step-counter;
+  position: relative;
+}
+
+.instructions-list li::before {
+  content: counter(step-counter);
+  position: absolute;
+  left: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  background: #007cbf;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.instructions-list li:hover {
+  background: #f8f9fa;
+  border-color: #007cbf;
+}
+
+.instructions-list li.current-step {
+  background: #e3f2fd;
+  border-color: #007cbf;
+  border-width: 2px;
+}
+
+.step-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-left: 20px;
+}
+
+.step-details {
+  flex: 1;
+}
+
+.step-instruction {
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.step-meta {
+  font-size: 12px;
+  color: #666;
+}
+
+.step-distance {
+  font-weight: 500;
+}
+
+.step-duration {
+  margin-left: 4px;
+}
+
+.quick-actions {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 20px;
+  background: white;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.quick-actions button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #e0e0e0;
+  background: white;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quick-actions button:hover {
+  background: #f8f9fa;
+  border-color: #007cbf;
+  transform: scale(1.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .navigation-panel {
+    right: 10px;
+    left: 10px;
+    width: auto;
+    max-height: 70vh;
+  }
+
+  .navigation-header h3 {
+    font-size: 16px;
+  }
+
+  .mode-buttons button {
+    font-size: 20px;
+    padding: 10px;
+  }
+
+  .instructions-list {
+    max-height: 300px;
+  }
+}
+
+/* Scrollbar Styling */
+.instructions-list::-webkit-scrollbar,
+.route-info::-webkit-scrollbar {
+  width: 6px;
+}
+
+.instructions-list::-webkit-scrollbar-track,
+.route-info::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.instructions-list::-webkit-scrollbar-thumb,
+.route-info::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.instructions-list::-webkit-scrollbar-thumb:hover,
+.route-info::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

@@ -8,13 +8,48 @@ from openai import OpenAI
 from src.config import config
 import json
 import logging
+import boto3
 
 logger = logging.getLogger(__name__)
 
 class QueryParserNode:
     def __init__(self):
         # Initialize LLM based on config
-        if config.LLM_API_TYPE == "openai-compatible":
+        if config.LLM_API_TYPE == "bedrock":
+            # Use AWS Bedrock
+            from langchain_aws import ChatBedrock
+            
+            # Configure AWS credentials if provided
+            session_config = {}
+            if config.AWS_ACCESS_KEY_ID and config.AWS_SECRET_ACCESS_KEY:
+                session_config = {
+                    'aws_access_key_id': config.AWS_ACCESS_KEY_ID,
+                    'aws_secret_access_key': config.AWS_SECRET_ACCESS_KEY,
+                }
+                if config.AWS_SESSION_TOKEN:
+                    session_config['aws_session_token'] = config.AWS_SESSION_TOKEN
+            
+            # Create boto3 session
+            if session_config:
+                session = boto3.Session(**session_config, region_name=config.AWS_REGION)
+            else:
+                # Use default credentials (IAM role, AWS CLI config, etc.)
+                session = boto3.Session(region_name=config.AWS_REGION)
+            
+            # Initialize Bedrock client
+            bedrock_client = session.client('bedrock-runtime')
+            
+            self.llm = ChatBedrock(
+                client=bedrock_client,
+                model_id=config.BEDROCK_MODEL_ID,
+                model_kwargs={
+                    "temperature": config.TEMPERATURE,
+                    "max_tokens": 4096
+                }
+            )
+            logger.info(f"Initialized Bedrock LLM with model: {config.BEDROCK_MODEL_ID}")
+            
+        elif config.LLM_API_TYPE == "openai-compatible":
             # Use OpenAI client with custom base URL
             self.llm = ChatOpenAI(
                 model=config.LLM_MODEL,

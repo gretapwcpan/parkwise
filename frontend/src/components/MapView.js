@@ -7,7 +7,7 @@ import './MapView.css';
 // MapLibre GL JS doesn't require access tokens for OpenStreetMap
 // maplibregl.accessToken is not needed
 
-const MapView = ({ parkingSpots, onSpotSelect, selectedSpot, userId, userLocation, searchRadius }) => {
+const MapView = ({ parkingSpots, onSpotSelect, selectedSpot, userId, userLocation, searchRadius, onSearchCenterChange, navigationRoute, onLocationPinned, hashtagLocations, activeHashtags }) => {
   const mapContainer = useRef(null);
   const map = useRef(null);
   // Use actual user location from props, with fallback
@@ -17,6 +17,12 @@ const MapView = ({ parkingSpots, onSpotSelect, selectedSpot, userId, userLocatio
   const markersRef = useRef({});
   const userMarkerRef = useRef(null);
   const radiusCircleRef = useRef(null);
+  const searchCenterMarkerRef = useRef(null);
+  const [searchCenter, setSearchCenter] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const routeLayerRef = useRef(null);
+  const pinnedLocationRef = useRef(null);
+  const hashtagMarkersRef = useRef({});
   
   const { locationUpdates, connected } = useSocket();
 
@@ -71,7 +77,124 @@ const MapView = ({ parkingSpots, onSpotSelect, selectedSpot, userId, userLocatio
 
     // Add navigation controls
     map.current.addControl(new maplibregl.NavigationControl(), 'top-right');
+    
+    // Add right-click handler for pinning locations
+    map.current.on('contextmenu', (e) => {
+      e.preventDefault();
+      const { lng, lat } = e.lngLat;
+      
+      // Remove existing pinned location marker
+      if (pinnedLocationRef.current) {
+        pinnedLocationRef.current.remove();
+      }
+      
+      // Create pin marker
+      const el = document.createElement('div');
+      el.innerHTML = '📌';
+      el.style.fontSize = '30px';
+      el.style.cursor = 'pointer';
+      
+      pinnedLocationRef.current = new maplibregl.Marker({
+        element: el,
+        anchor: 'bottom'
+      })
+        .setLngLat([lng, lat])
+        .addTo(map.current);
+      
+      // Notify parent component
+      if (onLocationPinned) {
+        onLocationPinned({ lat, lng });
+      }
+    });
   }, []); // Remove dependencies to only init once
+
+  // Display navigation route on map
+  useEffect(() => {
+    if (!map.current || !navigationRoute) return;
+
+    // Remove existing route layers and source if they exist
+    if (map.current.getLayer('route-line')) {
+      map.current.removeLayer('route-line');
+    }
+    if (map.current.getLayer('route-outline')) {
+      map.current.removeLayer('route-outline');
+    }
+    if (map.current.getLayer('route-arrows')) {
+      map.current.removeLayer('route-arrows');
+    }
+    if (map.current.getSource('route')) {
+      map.current.removeSource('route');
+    }
+
+    // Add the route as a source
+    map.current.addSource('route', {
+      type: 'geojson',
+      data: navigationRoute.geometry
+    });
+
+    // Add route outline layer (for better visibility)
+    map.current.addLayer({
+      id: 'route-outline',
+      type: 'line',
+      source: 'route',
+      layout: {
+        'line-join': 'round',
+        'line-cap': 'round'
+      },
+      paint: {
+        'line-color': '#ffffff',
+        'line-width': 8,
+        'line-opacity': 0.8
+      }
+    });
+
+    // Add main route layer
+    map.current.addLayer({
+      id: 'route-line',
+      type: 'line',
+      source: 'route',
+      layout: {
+        'line-join': 'round',
+        'line-cap': 'round'
+      },
+      paint: {
+        'line-color': '#007cbf',
+        'line-width': 5,
+        'line-opacity': 0.9
+      }
+    });
+
+    // Add direction arrows along the route
+    map.current.addLayer({
+      id: 'route-arrows',
+      type: 'symbol',
+      source: 'route',
+      layout: {
+        'symbol-placement': 'line',
+        'symbol-spacing': 50,
+        'text-field': '→',
+        'text-size': 20,
+        'text-rotation-alignment': 'map',
+        'text-keep-upright': false
+      },
+      paint: {
+        'text-color': '#ffffff',
+        'text-halo-color': '#007cbf',
+        'text-halo-width': 2
+      }
+    });
+
+    // Fit map to route bounds
+    if (navigationRoute.bounds) {
+      map.current.fitBounds(
+        [navigationRoute.bounds.southwest, navigationRoute.bounds.northeast],
+        {
+          padding: { top: 50, bottom: 50, left: 50, right: 50 },
+          duration: 1000
+        }
+      );
+    }
+  }, [navigationRoute]);
 
   // Add/update user marker when location changes
   useEffect(() => {
@@ -100,17 +223,25 @@ const MapView = ({ parkingSpots, onSpotSelect, selectedSpot, userId, userLocatio
 
   // Draw search radius circle
   useEffect(() => {
-    if (!map.current || !userLocation || !searchRadius) return;
+    if (!map.current || !searchRadius) return;
 
-    // Remove existing circle if it exists
-    if (map.current.getSource('radius-circle')) {
+    // Use search center if set, otherwise use user location
+    const centerPoint = searchCenter || userLocation;
+    if (!centerPoint) return;
+
+    // Remove existing circle layers and source if they exist
+    if (map.current.getLayer('radius-circle-fill')) {
       map.current.removeLayer('radius-circle-fill');
+    }
+    if (map.current.getLayer('radius-circle-line')) {
       map.current.removeLayer('radius-circle-line');
+    }
+    if (map.current.getSource('radius-circle')) {
       map.current.removeSource('radius-circle');
     }
 
     // Create circle coordinates
-    const center = [userLocation.longitude, userLocation.latitude];
+    const center = [centerPoint.longitude, centerPoint.latitude];
     const radius = searchRadius;
     const options = { steps: 64, units: 'meters' };
     
@@ -122,7 +253,7 @@ const MapView = ({ parkingSpots, onSpotSelect, selectedSpot, userId, userLocatio
       const dy = radius * Math.sin(angle);
       
       // Convert meters to degrees (approximate)
-      const dLng = dx / (111320 * Math.cos(userLocation.latitude * Math.PI / 180));
+      const dLng = dx / (111320 * Math.cos(centerPoint.latitude * Math.PI / 180));
       const dLat = dy / 110540;
       
       coordinates.push([
@@ -149,8 +280,8 @@ const MapView = ({ parkingSpots, onSpotSelect, selectedSpot, userId, userLocatio
       type: 'fill',
       source: 'radius-circle',
       paint: {
-        'fill-color': '#007cbf',
-        'fill-opacity': 0.1
+        'fill-color': isDragging ? '#ff6b6b' : '#007cbf',
+        'fill-opacity': isDragging ? 0.2 : 0.1
       }
     });
 
@@ -160,12 +291,64 @@ const MapView = ({ parkingSpots, onSpotSelect, selectedSpot, userId, userLocatio
       type: 'line',
       source: 'radius-circle',
       paint: {
-        'line-color': '#007cbf',
-        'line-width': 2,
-        'line-opacity': 0.5
+        'line-color': isDragging ? '#ff6b6b' : '#007cbf',
+        'line-width': isDragging ? 3 : 2,
+        'line-opacity': isDragging ? 0.8 : 0.5
       }
     });
-  }, [userLocation, searchRadius]);
+
+    // Remove existing search center marker if it exists
+    if (searchCenterMarkerRef.current) {
+      searchCenterMarkerRef.current.remove();
+      searchCenterMarkerRef.current = null;
+    }
+
+    // Add draggable marker at the center of the circle
+    const markerEl = document.createElement('div');
+    markerEl.innerHTML = '🎯';
+    markerEl.style.fontSize = '25px';
+    markerEl.style.cursor = 'move';
+    markerEl.style.filter = 'drop-shadow(0 0 5px rgba(0, 124, 191, 0.8))';
+    markerEl.title = 'Drag to move search area';
+
+    searchCenterMarkerRef.current = new maplibregl.Marker({
+      element: markerEl,
+      draggable: true,
+      anchor: 'center'
+    })
+      .setLngLat(center)
+      .addTo(map.current);
+
+    // Handle drag events
+    searchCenterMarkerRef.current.on('dragstart', () => {
+      setIsDragging(true);
+      map.current.getCanvas().style.cursor = 'grabbing';
+    });
+
+    searchCenterMarkerRef.current.on('drag', () => {
+      const lngLat = searchCenterMarkerRef.current.getLngLat();
+      setSearchCenter({
+        longitude: lngLat.lng,
+        latitude: lngLat.lat
+      });
+    });
+
+    searchCenterMarkerRef.current.on('dragend', () => {
+      setIsDragging(false);
+      map.current.getCanvas().style.cursor = '';
+      const lngLat = searchCenterMarkerRef.current.getLngLat();
+      const newCenter = {
+        longitude: lngLat.lng,
+        latitude: lngLat.lat
+      };
+      setSearchCenter(newCenter);
+      
+      // Notify parent component if callback is provided
+      if (onSearchCenterChange) {
+        onSearchCenterChange(newCenter);
+      }
+    });
+  }, [userLocation, searchRadius, searchCenter, isDragging, onSearchCenterChange]);
 
   // Add parking spot markers
   useEffect(() => {
@@ -305,6 +488,86 @@ const MapView = ({ parkingSpots, onSpotSelect, selectedSpot, userId, userLocatio
     });
   }, [searchRadius, userLocation]);
 
+  // Display hashtag locations as animated circles
+  useEffect(() => {
+    if (!map.current) return;
+
+    // Clear existing hashtag markers
+    Object.keys(hashtagMarkersRef.current).forEach(key => {
+      hashtagMarkersRef.current[key].remove();
+      delete hashtagMarkersRef.current[key];
+    });
+
+    // Add new hashtag location markers
+    if (hashtagLocations && hashtagLocations.length > 0) {
+      hashtagLocations.forEach(location => {
+        // Create animated circle element
+        const el = document.createElement('div');
+        el.className = 'hashtag-circle';
+        el.style.width = '40px';
+        el.style.height = '40px';
+        el.style.borderRadius = '50%';
+        el.style.border = `3px solid ${location.color}`;
+        el.style.backgroundColor = `${location.color}33`; // 20% opacity
+        el.style.animation = 'pulse 2s infinite';
+        el.style.cursor = 'pointer';
+        
+        // Add inner circle for better visibility
+        const inner = document.createElement('div');
+        inner.style.width = '20px';
+        inner.style.height = '20px';
+        inner.style.borderRadius = '50%';
+        inner.style.backgroundColor = location.color;
+        inner.style.margin = '10px';
+        inner.style.opacity = `${location.matchStrength}`;
+        el.appendChild(inner);
+
+        // Create marker
+        const marker = new maplibregl.Marker({
+          element: el,
+          anchor: 'center'
+        })
+          .setLngLat([location.lng, location.lat])
+          .setPopup(
+            new maplibregl.Popup({ offset: 25 })
+              .setHTML(`
+                <div style="padding: 10px;">
+                  <h4 style="margin: 0 0 5px 0; color: ${location.color};">${location.hashtag}</h4>
+                  <p style="margin: 0;">Match: ${Math.round(location.matchStrength * 100)}%</p>
+                  <p style="margin: 5px 0 0 0; font-size: 12px;">Click to explore this location</p>
+                </div>
+              `)
+          )
+          .addTo(map.current);
+
+        hashtagMarkersRef.current[location.id] = marker;
+      });
+
+      // Add CSS animation if not already present
+      if (!document.querySelector('#hashtag-pulse-style')) {
+        const style = document.createElement('style');
+        style.id = 'hashtag-pulse-style';
+        style.textContent = `
+          @keyframes pulse {
+            0% {
+              box-shadow: 0 0 0 0 currentColor;
+              transform: scale(1);
+            }
+            50% {
+              box-shadow: 0 0 0 10px transparent;
+              transform: scale(1.1);
+            }
+            100% {
+              box-shadow: 0 0 0 0 transparent;
+              transform: scale(1);
+            }
+          }
+        `;
+        document.head.appendChild(style);
+      }
+    }
+  }, [hashtagLocations]);
+
   return (
     <div className="map-container">
       <div ref={mapContainer} className="map" />
@@ -315,6 +578,47 @@ const MapView = ({ parkingSpots, onSpotSelect, selectedSpot, userId, userLocatio
         {parkingSpots && parkingSpots.length > 0 && (
           <div className="parking-count">
             📍 {parkingSpots.length} spots within {searchRadius}m
+          </div>
+        )}
+        {searchCenter && (
+          <div className="search-center-info" style={{
+            background: 'rgba(255, 255, 255, 0.9)',
+            padding: '5px 10px',
+            borderRadius: '4px',
+            marginTop: '5px',
+            fontSize: '12px'
+          }}>
+            🎯 Custom search center (drag to move)
+          </div>
+        )}
+        {activeHashtags && activeHashtags.length > 0 && (
+          <div className="active-hashtags-info" style={{
+            background: 'rgba(255, 255, 255, 0.95)',
+            padding: '8px 12px',
+            borderRadius: '8px',
+            marginTop: '5px',
+            fontSize: '14px',
+            maxWidth: '300px'
+          }}>
+            <strong>Active Hashtags:</strong>
+            <div style={{ marginTop: '5px' }}>
+              {activeHashtags.map((tag, idx) => (
+                <span key={idx} style={{
+                  display: 'inline-block',
+                  padding: '2px 8px',
+                  margin: '2px',
+                  background: 'linear-gradient(135deg, #667eea, #764ba2)',
+                  color: 'white',
+                  borderRadius: '12px',
+                  fontSize: '12px'
+                }}>
+                  {tag}
+                </span>
+              ))}
+            </div>
+            <div style={{ marginTop: '5px', fontSize: '11px', color: '#666' }}>
+              {hashtagLocations ? `${hashtagLocations.length} locations found` : 'Searching...'}
+            </div>
           </div>
         )}
       </div>

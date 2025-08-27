@@ -10,6 +10,8 @@ const rateLimit = require('express-rate-limit');
 const bookingRoutes = require('./routes/bookingRoutes');
 const locationRoutes = require('./routes/locationRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const navigationRoutes = require('./routes/navigationRoutes');
+const vibeRoutes = require('./routes/vibeRoutes');
 
 // Import services
 const firebaseService = require('./services/firebaseService');
@@ -50,6 +52,8 @@ app.use('/api/', limiter);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/locations', locationRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/navigation', navigationRoutes);
+app.use('/api/vibe', vibeRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

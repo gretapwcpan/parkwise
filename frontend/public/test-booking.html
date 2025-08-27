@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Booking Panel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+        }
+        
+        .button-group {
+            margin: 20px 0;
+        }
+        
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #007cbf;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        button:hover {
+            background: #005a8b;
+        }
+        
+        .booking-form {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f5e9;
+            border-radius: 4px;
+            border: 1px solid #4caf50;
+        }
+        
+        .error {
+            background: #ffebee;
+            border-color: #f44336;
+        }
+        
+        .info {
+            background: #e3f2fd;
+            border-color: #2196f3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🅿️ Booking Panel Test</h1>
+        
+        <div class="info">
+            <h3>Test Instructions:</h3>
+            <p>This page tests the booking functionality with the fixed time selection logic.</p>
+            <p>The fix addresses the issue where selecting relative time options (in 10 minutes, in 30 minutes, etc.) was not working properly.</p>
+        </div>
+        
+        <div class="booking-form">
+            <h2>Book Parking Spot</h2>
+            
+            <div class="form-group">
+                <label for="date">Date</label>
+                <input type="date" id="date" />
+            </div>
+            
+            <div class="form-group">
+                <label for="time">Expected Arrival Time</label>
+                <select id="time">
+                    <option value="09:00">9:00 AM</option>
+                    <option value="10:00">10:00 AM</option>
+                    <option value="14:00">2:00 PM</option>
+                    <option value="16:00">4:00 PM</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="duration">Stay Duration</label>
+                <select id="duration">
+                    <option value="1">30 minutes</option>
+                    <option value="2">1 hour</option>
+                    <option value="3">2 hours</option>
+                    <option value="4">3 hours</option>
+                </select>
+            </div>
+            
+            <button onclick="testBooking()">Confirm Booking</button>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+    
+    <script>
+        // Set default date to today
+        document.getElementById('date').value = new Date().toISOString().split('T')[0];
+        
+        function testBooking() {
+            const selectedDate = document.getElementById('date').value;
+            const selectedTime = document.getElementById('time').value;
+            const duration = parseInt(document.getElementById('duration').value);
+            
+            if (!selectedDate || !selectedTime) {
+                showResult('Please select date and time', 'error');
+                return;
+            }
+            
+            // This mimics the logic from the fixed BookingPanel.js
+            let startTime;
+            const now = new Date();
+            
+            // Check if selectedTime is a relative time option (1, 2, 3, 4)
+            if (selectedTime === '1') {
+                // in 10 minutes
+                startTime = new Date(now.getTime() + 10 * 60 * 1000);
+            } else if (selectedTime === '2') {
+                // in 30 minutes
+                startTime = new Date(now.getTime() + 30 * 60 * 1000);
+            } else if (selectedTime === '3') {
+                // in 1 hour
+                startTime = new Date(now.getTime() + 60 * 60 * 1000);
+            } else if (selectedTime === '4') {
+                // in 2 hours
+                startTime = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+            } else {
+                // It's a specific time in HH:MM format
+                startTime = new Date(`${selectedDate}T${selectedTime}`);
+            }
+            
+            // Calculate end time based on duration
+            let durationMs;
+            if (duration === 1) {
+                durationMs = 30 * 60 * 1000; // 30 minutes
+            } else if (duration === 2) {
+                durationMs = 60 * 60 * 1000; // 1 hour
+            } else if (duration === 3) {
+                durationMs = 2 * 60 * 60 * 1000; // 2 hours
+            } else if (duration === 4) {
+                durationMs = 3 * 60 * 60 * 1000; // 3 hours
+            } else {
+                durationMs = duration * 60 * 60 * 1000; // fallback to duration in hours
+            }
+            
+            const endTime = new Date(startTime.getTime() + durationMs);
+            
+            const bookingData = {
+                spotId: 'test-spot-123',
+                userId: 'test-user-456',
+                startTime: startTime.toISOString(),
+                endTime: endTime.toISOString(),
+            };
+            
+            // Display the result
+            const timeOption = document.querySelector(`#time option[value="${selectedTime}"]`).textContent;
+            const durationOption = document.querySelector(`#duration option[value="${duration}"]`).textContent;
+            
+            const resultHTML = `
+                <h3>✅ Booking Data Generated Successfully!</h3>
+                <p><strong>Selected Option:</strong> ${timeOption}</p>
+                <p><strong>Duration:</strong> ${durationOption}</p>
+                <p><strong>Start Time:</strong> ${startTime.toLocaleString()}</p>
+                <p><strong>End Time:</strong> ${endTime.toLocaleString()}</p>
+                <p><strong>ISO Start:</strong> ${bookingData.startTime}</p>
+                <p><strong>ISO End:</strong> ${bookingData.endTime}</p>
+                <hr>
+                <p><strong>JSON Data to Send:</strong></p>
+                <pre>${JSON.stringify(bookingData, null, 2)}</pre>
+            `;
+            
+            showResult(resultHTML, 'result');
+        }
+        
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = type;
+            resultDiv.innerHTML = message;
+        }
+    </script>
+</body>
+</html>

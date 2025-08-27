@@ -1,0 +1,244 @@
+.location-vibe-panel {
+  position: fixed;
+  right: 20px;
+  top: 80px;
+  width: 400px;
+  max-height: 80vh;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  z-index: 1001;
+  overflow: hidden;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.vibe-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.vibe-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.close-btn {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  font-size: 20px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.close-btn:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+.vibe-content {
+  padding: 20px;
+  overflow-y: auto;
+  max-height: calc(80vh - 60px);
+}
+
+.vibe-summary {
+  margin-bottom: 20px;
+}
+
+.vibe-score {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.score-label {
+  font-weight: 500;
+  color: #666;
+}
+
+.score-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #667eea;
+}
+
+.summary-text {
+  color: #333;
+  line-height: 1.5;
+}
+
+.hashtags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.hashtag {
+  padding: 4px 12px;
+  background: #f0f4ff;
+  color: #667eea;
+  border-radius: 16px;
+  font-size: 14px;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.hashtag.clickable {
+  cursor: pointer;
+}
+
+.hashtag.clickable:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.hashtag.active {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(102, 126, 234, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0); }
+}
+
+.hashtag.parking-tag {
+  background: #fff0f0;
+  color: #e53e3e;
+}
+
+.hashtag.parking-tag.active {
+  background: linear-gradient(135deg, #e53e3e, #c62828);
+  color: white;
+}
+
+.parking-analysis {
+  background: #f8f9fa;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.parking-analysis h4 {
+  margin: 0 0 12px 0;
+  color: #333;
+}
+
+.difficulty-meter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.difficulty-meter .label {
+  font-weight: 500;
+  color: #666;
+}
+
+.difficulty-meter .meter {
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+.difficulty-meter .level {
+  font-weight: 600;
+  color: #333;
+}
+
+.parking-tips {
+  margin: 0;
+  padding-left: 20px;
+  color: #666;
+}
+
+.parking-tips li {
+  margin-bottom: 6px;
+}
+
+.transport-recommendations {
+  background: #f0f8ff;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.transport-recommendations h4 {
+  margin: 0 0 12px 0;
+  color: #333;
+}
+
+.transport-option {
+  margin-bottom: 8px;
+  color: #666;
+}
+
+.find-similar-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.find-similar-btn:hover {
+  transform: translateY(-2px);
+}
+
+.loading, .error {
+  padding: 40px;
+  text-align: center;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .location-vibe-panel {
+    right: 10px;
+    left: 10px;
+    width: auto;
+  }
+}
