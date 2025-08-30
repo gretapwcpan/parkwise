@@ -340,19 +340,22 @@ function App() {
                   setHashtagLocations(hashtagLocations.filter(loc => loc.hashtag !== hashtag));
                 }
               }}
-              onFindSimilar={(hashtags) => {
-                // Show alert with similar locations (mock data for now)
-                const similarLocations = [
-                  { name: "Xinyi District", match: "92%", tags: hashtags.slice(0, 3).join(", ") },
-                  { name: "Daan Park Area", match: "85%", tags: hashtags.slice(1, 4).join(", ") },
-                  { name: "Zhongshan Station", match: "78%", tags: hashtags.slice(0, 2).join(", ") }
-                ];
-                
-                const message = `Similar Vibes Found:\n\n${similarLocations.map(loc => 
-                  `📍 ${loc.name} (${loc.match} match)\n   Tags: ${loc.tags}`
-                ).join('\n\n')}\n\nNote: This feature will search and navigate to similar locations in the full version.`;
-                
-                alert(message);
+              onFindSimilar={(similarLocs) => {
+                // If similarLocs is an array of locations from the API
+                if (Array.isArray(similarLocs) && similarLocs.length > 0) {
+                  // Use the actual similar locations from the API
+                  const message = `Similar Locations Found:\n\n${similarLocs.slice(0, 5).map(loc => 
+                    `📍 Location (Score: ${loc.score || 'N/A'}/10)\n   Tags: ${
+                      Array.isArray(loc.matchingTags) ? loc.matchingTags.join(', ') : 
+                      Array.isArray(loc.hashtags) ? loc.hashtags.join(', ') : 'No tags'
+                    }${loc.distance ? `\n   Distance: ${loc.distance.toFixed(1)} km` : ''}`
+                  ).join('\n\n')}`;
+                  
+                  alert(message);
+                } else {
+                  // Fallback for when no similar locations are found
+                  alert('No similar locations found in the cache. Try analyzing more locations first!');
+                }
               }}
             />
           )}

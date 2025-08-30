@@ -1,4 +1,5 @@
 const axios = require('axios');
+const cacheService = require('./cacheService');
 
 // Overpass API for fetching POI data from OpenStreetMap
 const OVERPASS_API_URL = 'https://overpass-api.de/api/interpreter';
@@ -9,6 +10,15 @@ const locationVibeService = {
    */
   async analyzeLocationVibe(lat, lng, radius = 500) {
     try {
+      // Check cache first
+      const cached = cacheService.getLocation(lat, lng, radius);
+      if (cached) {
+        console.log(`Cache hit for location ${lat}, ${lng}`);
+        return cached;
+      }
+      
+      console.log(`Cache miss for location ${lat}, ${lng} - fetching fresh data`);
+      
       // 1. Fetch nearby POIs from OpenStreetMap
       const pois = await this.fetchNearbyPOIs(lat, lng, radius);
       
@@ -33,7 +43,7 @@ const locationVibeService = {
         transitData
       );
       
-      return {
+      const result = {
         success: true,
         location: {
           lat,
@@ -48,6 +58,11 @@ const locationVibeService = {
           categories: analysis.categories
         }
       };
+      
+      // Store in cache
+      cacheService.setLocation(lat, lng, radius, result);
+      
+      return result;
     } catch (error) {
       console.error('Error analyzing location vibe:', error);
       return {
@@ -553,13 +568,110 @@ const locationVibeService = {
    * Find similar locations based on hashtags
    */
   async findSimilarVibes(hashtags, currentLocation, limit = 5) {
-    // This would typically query a database of previously analyzed locations
-    // For now, returning a placeholder structure
-    return {
-      success: true,
-      similarLocations: [],
-      message: 'Similar location search will be implemented with database integration'
-    };
+    try {
+      // Use cache to find similar locations
+      const similarLocations = cacheService.findSimilarLocations(
+        hashtags, 
+        currentLocation, 
+        limit
+      );
+      
+      // If we have enough cached results, return them
+      if (similarLocations.length >= Math.min(limit, 3)) {
+        return {
+          success: true,
+          similarLocations: similarLocations.map(loc => ({
+            lat: loc.lat,
+            lng: loc.lng,
+            score: loc.score,
+            summary: loc.summary,
+            parkingDifficulty: loc.parkingDifficulty,
+            matchingTags: loc.matchingTags,
+            matchCount: loc.matchCount
+          })),
+          fromCache: true,
+          message: `Found ${similarLocations.length} similar locations`
+        };
+      }
+      
+      // If not enough cached results, get nearby locations and analyze them
+      const nearbyLocations = cacheService.getNearbyLocations(
+        currentLocation?.lat || 0,
+        currentLocation?.lng || 0,
+        5 // 5km radius
+      );
+      
+      // Filter by matching hashtags
+      const filtered = nearbyLocations.filter(loc => {
+        const locHashtags = [
+          ...(loc.data.vibe?.hashtags || []),
+          ...(loc.data.parking?.hashtags || [])
+        ];
+        return hashtags.some(tag => locHashtags.includes(tag));
+      });
+      
+      return {
+        success: true,
+        similarLocations: filtered.slice(0, limit).map(loc => ({
+          lat: loc.lat,
+          lng: loc.lng,
+          distance: loc.distance,
+          score: loc.data.vibe?.score || 0,
+          summary: loc.data.vibe?.summary || '',
+          parkingDifficulty: loc.data.parking?.difficulty || 0,
+          hashtags: [
+            ...(loc.data.vibe?.hashtags || []),
+            ...(loc.data.parking?.hashtags || [])
+          ]
+        })),
+        fromCache: true,
+        message: `Found ${filtered.length} similar locations within 5km`
+      };
+    } catch (error) {
+      console.error('Error finding similar vibes:', error);
+      return {
+        success: false,
+        error: 'Failed to find similar locations',
+        similarLocations: []
+      };
+    }
+  },
+
+  /**
+   * Get cache statistics
+   */
+  getCacheStats() {
+    return cacheService.getStats();
+  },
+
+  /**
+   * Pre-populate cache with popular locations
+   */
+  async prePopulateCache(popularLocations) {
+    const results = [];
+    
+    for (const location of popularLocations) {
+      try {
+        // Check if already cached
+        const cached = cacheService.getLocation(location.lat, location.lng);
+        if (!cached) {
+          // Analyze and cache
+          const analysis = await this.analyzeLocationVibe(
+            location.lat,
+            location.lng,
+            location.radius || 500
+          );
+          results.push({
+            location: `${location.lat},${location.lng}`,
+            success: analysis.success
+          });
+        }
+      } catch (error) {
+        console.error(`Failed to pre-populate ${location.lat},${location.lng}:`, error);
+      }
+    }
+    
+    return results;
   }
 };
 
