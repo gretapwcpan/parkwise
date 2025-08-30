@@ -4,9 +4,9 @@ const LocationDebug = ({ userLocation }) => {
   return (
     <div style={{
       position: 'fixed',
-      top: '60px',
-      right: '10px',
-      background: 'rgba(0, 0, 0, 0.8)',
+      bottom: '20px',
+      left: '20px',
+      background: 'rgba(65, 75, 63, 0.8)',
       color: 'white',
       padding: '10px',
       borderRadius: '5px',

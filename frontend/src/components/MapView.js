@@ -56,9 +56,13 @@ const MapView = ({ parkingSpots, onSpotSelect, selectedSpot, userId, userLocatio
         sources: {
           'raster-tiles': {
             type: 'raster',
-            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            tiles: [
+              'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+              'https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+              'https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png'
+            ],
             tileSize: 256,
-            attribution: '© OpenStreetMap contributors'
+            attribution: '© OpenStreetMap contributors, © CARTO'
           }
         },
         layers: [
@@ -211,15 +215,53 @@ const MapView = ({ parkingSpots, onSpotSelect, selectedSpot, userId, userLocatio
     userEl.innerHTML = '📍';
     userEl.style.fontSize = '30px';
     userEl.style.filter = 'drop-shadow(0 0 10px rgba(33, 150, 243, 0.8))';
+    userEl.style.cursor = 'move';
+    userEl.title = 'Drag to adjust your location';
     
     console.log('Creating user marker at actual location:', [userLocation.longitude, userLocation.latitude]);
     userMarkerRef.current = new maplibregl.Marker({
       element: userEl,
-      anchor: 'bottom'
+      anchor: 'bottom',
+      draggable: true  // Make the user marker draggable
     })
       .setLngLat([userLocation.longitude, userLocation.latitude])
       .addTo(map.current);
-  }, [userLocation]);
+    
+    // Add drag event listeners
+    userMarkerRef.current.on('dragstart', () => {
+      map.current.getCanvas().style.cursor = 'grabbing';
+      userEl.style.filter = 'drop-shadow(0 0 15px rgba(255, 107, 107, 0.8))';
+    });
+    
+    userMarkerRef.current.on('drag', () => {
+      const lngLat = userMarkerRef.current.getLngLat();
+      // Update the search center to follow the dragged user location
+      setSearchCenter({
+        longitude: lngLat.lng,
+        latitude: lngLat.lat
+      });
+    });
+    
+    userMarkerRef.current.on('dragend', () => {
+      map.current.getCanvas().style.cursor = '';
+      userEl.style.filter = 'drop-shadow(0 0 10px rgba(33, 150, 243, 0.8))';
+      const lngLat = userMarkerRef.current.getLngLat();
+      const newLocation = {
+        longitude: lngLat.lng,
+        latitude: lngLat.lat
+      };
+      
+      // Update search center
+      setSearchCenter(newLocation);
+      
+      // Notify parent component about the new search center
+      if (onSearchCenterChange) {
+        onSearchCenterChange(newLocation);
+      }
+      
+      console.log('User location manually adjusted to:', [newLocation.longitude, newLocation.latitude]);
+    });
+  }, [userLocation, onSearchCenterChange]);
 
   // Draw search radius circle
   useEffect(() => {
@@ -297,57 +339,57 @@ const MapView = ({ parkingSpots, onSpotSelect, selectedSpot, userId, userLocatio
       }
     });
 
-    // Remove existing search center marker if it exists
-    if (searchCenterMarkerRef.current) {
-      searchCenterMarkerRef.current.remove();
-      searchCenterMarkerRef.current = null;
-    }
-
-    // Add draggable marker at the center of the circle
-    const markerEl = document.createElement('div');
-    markerEl.innerHTML = '🎯';
-    markerEl.style.fontSize = '25px';
-    markerEl.style.cursor = 'move';
-    markerEl.style.filter = 'drop-shadow(0 0 5px rgba(0, 124, 191, 0.8))';
-    markerEl.title = 'Drag to move search area';
-
-    searchCenterMarkerRef.current = new maplibregl.Marker({
-      element: markerEl,
-      draggable: true,
-      anchor: 'center'
-    })
-      .setLngLat(center)
-      .addTo(map.current);
-
-    // Handle drag events
-    searchCenterMarkerRef.current.on('dragstart', () => {
-      setIsDragging(true);
-      map.current.getCanvas().style.cursor = 'grabbing';
-    });
-
-    searchCenterMarkerRef.current.on('drag', () => {
-      const lngLat = searchCenterMarkerRef.current.getLngLat();
-      setSearchCenter({
-        longitude: lngLat.lng,
-        latitude: lngLat.lat
-      });
-    });
-
-    searchCenterMarkerRef.current.on('dragend', () => {
-      setIsDragging(false);
-      map.current.getCanvas().style.cursor = '';
-      const lngLat = searchCenterMarkerRef.current.getLngLat();
-      const newCenter = {
-        longitude: lngLat.lng,
-        latitude: lngLat.lat
-      };
-      setSearchCenter(newCenter);
-      
-      // Notify parent component if callback is provided
-      if (onSearchCenterChange) {
-        onSearchCenterChange(newCenter);
+    // Add search center marker only when there's a custom search center
+    if (searchCenter && searchCenter !== userLocation) {
+      // Remove existing search center marker if it exists
+      if (searchCenterMarkerRef.current) {
+        searchCenterMarkerRef.current.remove();
+        searchCenterMarkerRef.current = null;
       }
-    });
+
+      // Create search center marker
+      const searchEl = document.createElement('div');
+      searchEl.innerHTML = '🎯';
+      searchEl.style.fontSize = '25px';
+      searchEl.style.cursor = 'move';
+      
+      searchCenterMarkerRef.current = new maplibregl.Marker({
+        element: searchEl,
+        draggable: true
+      })
+        .setLngLat([searchCenter.longitude, searchCenter.latitude])
+        .addTo(map.current);
+      
+      // Attach event listeners to the marker
+      searchCenterMarkerRef.current.on('dragstart', () => {
+        setIsDragging(true);
+        map.current.getCanvas().style.cursor = 'grabbing';
+      });
+
+      searchCenterMarkerRef.current.on('drag', () => {
+        const lngLat = searchCenterMarkerRef.current.getLngLat();
+        setSearchCenter({
+          longitude: lngLat.lng,
+          latitude: lngLat.lat
+        });
+      });
+
+      searchCenterMarkerRef.current.on('dragend', () => {
+        setIsDragging(false);
+        map.current.getCanvas().style.cursor = '';
+        const lngLat = searchCenterMarkerRef.current.getLngLat();
+        const newCenter = {
+          longitude: lngLat.lng,
+          latitude: lngLat.lat
+        };
+        setSearchCenter(newCenter);
+        
+        // Notify parent component if callback is provided
+        if (onSearchCenterChange) {
+          onSearchCenterChange(newCenter);
+        }
+      });
+    }
   }, [userLocation, searchRadius, searchCenter, isDragging, onSearchCenterChange]);
 
   // Add parking spot markers
@@ -588,7 +630,6 @@ const MapView = ({ parkingSpots, onSpotSelect, selectedSpot, userId, userLocatio
             marginTop: '5px',
             fontSize: '12px'
           }}>
-            🎯 Custom search center (drag to move)
           </div>
         )}
         {activeHashtags && activeHashtags.length > 0 && (

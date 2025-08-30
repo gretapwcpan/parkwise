@@ -155,7 +155,18 @@ function App() {
       <SocketProvider userId={user.id}>
         <div className="App">
           <header className="app-header">
-            <h1>Parking Space Booking</h1>
+            <div className="header-left">
+              <img 
+                src="/logo.png" 
+                alt="ParkingPilot Logo" 
+                className="app-logo"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.marginLeft = '0';
+                }}
+              />
+              <h1>ParkingPilot</h1>
+            </div>
             <div className="header-actions">
               <button 
                 className="my-bookings-btn"
@@ -274,7 +285,7 @@ function App() {
               <div className="active-booking-info">
                 <h3>Active Booking</h3>
                 <p>Spot: {activeBooking.spotId}</p>
-                <p>Time: {new Date(activeBooking.startTime).toLocaleString()}</p>
+                <p>Time: {new Date(activeBooking.startTime).toLocaleString('en-US')}</p>
               </div>
             )}
           </main>

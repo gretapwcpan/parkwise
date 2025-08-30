@@ -51,7 +51,7 @@ const LocationVibe = ({ location, onClose, onFindSimilar, onHashtagClick }) => {
   return (
     <div className="location-vibe-panel">
       <div className="vibe-header">
-        <h3>📍 Location Intelligence</h3>
+        <h3>📍Location Intelligence</h3>
         <button className="close-btn" onClick={onClose}>✕</button>
       </div>
 

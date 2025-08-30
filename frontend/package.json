@@ -1,7 +1,7 @@
 {
   "name": "parking-space-frontend",
   "version": "1.0.0",
-  "description": "Frontend for parking space booking prototype",
+  "description": "Frontend for parking pilot prototype",
   "main": "index.js",
   "scripts": {
     "start": "react-scripts start",

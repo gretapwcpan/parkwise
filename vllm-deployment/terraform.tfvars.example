@@ -6,7 +6,7 @@ key_pair_name = "your-aws-key-pair-name"  # REQUIRED: Your AWS key pair for SSH 
 instance_type = "p4d.24xlarge"            # 8x A100 40GB GPUs
 
 # Model Configuration
-model_name           = "openai/gpt-oss-120b"
+model_name           = "openai/gpt-oss-20b"
 hf_token            = ""                   # Optional: HuggingFace token if model is private
 tensor_parallel_size = 8                   # Use all 8 GPUs
 max_model_len       = 4096

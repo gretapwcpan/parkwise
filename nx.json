@@ -25,9 +25,6 @@
     },
     "frontend": {
       "tags": ["type:app", "scope:frontend"]
-    },
-    "admin-dashboard": {
-      "tags": ["type:app", "scope:admin"]
     }
   }
 }

@@ -144,7 +144,7 @@ const BookingPanel = ({ spot, userId, onClose, onBookingComplete }) => {
         const time = new Date(slot.startTime);
         return {
           value: time.toTimeString().slice(0, 5),
-          label: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          label: time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
         };
       });
   };
@@ -184,11 +184,6 @@ const BookingPanel = ({ spot, userId, onClose, onBookingComplete }) => {
                 onChange={(e) => setSelectedTime(e.target.value)}
                 required
               >
-                <option value="">Select time</option>
-                <option value="1">in 10 minutes</option>
-                <option value="2">in 30 minutes</option>
-                <option value="3">in 1 hour</option>
-                <option value="4">in 2 hours</option>
 
                 {getAvailableTimeSlots().map(slot => (
                   <option key={slot.value} value={slot.value}>
@@ -222,8 +217,8 @@ const BookingPanel = ({ spot, userId, onClose, onBookingComplete }) => {
               <div className="alternative-slot">
                 <p>Alternative slot available:</p>
                 <p className="alternative-time">
-                  {new Date(alternativeSlot.startTime).toLocaleString()} - 
-                  {new Date(alternativeSlot.endTime).toLocaleTimeString()}
+                  {new Date(alternativeSlot.startTime).toLocaleString('en-US')} -
+                  {new Date(alternativeSlot.endTime).toLocaleTimeString('en-US')}
                 </p>
                 <button
                   type="button"

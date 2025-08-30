@@ -83,20 +83,9 @@ const NotificationHandler = ({ userId }) => {
     // Listen for custom events from the app
     window.addEventListener('app-notification', handleAppNotification);
     
-    // Simulate receiving notifications
-    // This would normally come from FCM
-    const welcomeTimer = setTimeout(() => {
-      showNotification(
-        'Welcome to Parking Space',
-        'Start booking your parking spots!',
-        { type: 'welcome' }
-      );
-    }, 3000);
-    
     // Return cleanup function
     return () => {
       window.removeEventListener('app-notification', handleAppNotification);
-      clearTimeout(welcomeTimer);
     };
   };
 

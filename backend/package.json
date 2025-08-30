@@ -1,7 +1,7 @@
 {
   "name": "parking-space-backend",
   "version": "1.0.0",
-  "description": "Backend for parking space booking prototype",
+  "description": "Backend for parking pilot prototype",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",

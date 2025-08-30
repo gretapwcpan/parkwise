@@ -15,10 +15,12 @@ const geocodingService = {
           lon: longitude,
           format: 'json',
           addressdetails: 1,
-          zoom: 18
+          zoom: 18,
+          'accept-language': 'en-US,en' // Force English language results
         },
         headers: {
-          'User-Agent': 'ParkingSpaceApp/1.0' // Required by Nominatim
+          'User-Agent': 'ParkingSpaceApp/1.0', // Required by Nominatim
+          'Accept-Language': 'en-US,en;q=0.9' // Also set in headers for better compatibility
         }
       });
 

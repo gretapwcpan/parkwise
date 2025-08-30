@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "instance_type" {
   description = "EC2 instance type for vLLM server"
   type        = string
-  default     = "p4d.24xlarge" # 8x A100 40GB GPUs for 120B model
+  default     = "p4d.24xlarge" # 8x A100 40GB GPUs for 20b model
   # Alternative options:
   # "p4de.24xlarge" - 8x A100 80GB GPUs (more memory)
   # "p5.48xlarge"   - 8x H100 80GB GPUs (latest, more expensive)
@@ -17,7 +17,7 @@ variable "instance_type" {
 variable "model_name" {
   description = "HuggingFace model to serve"
   type        = string
-  default     = "openai/gpt-oss-120b"
+  default     = "openai/gpt-oss-20b"
 }
 
 variable "hf_token" {
@@ -37,7 +37,7 @@ variable "api_key" {
 variable "tensor_parallel_size" {
   description = "Number of GPUs for tensor parallelism"
   type        = number
-  default     = 8 # Use all 8 GPUs for 120B model
+  default     = 8 # Use all 8 GPUs for 20b model
 }
 
 variable "max_model_len" {

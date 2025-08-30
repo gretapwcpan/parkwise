@@ -1,6 +1,6 @@
 # vLLM Deployment on AWS EC2
 
-This is a standalone vLLM deployment for serving large language models (like openai/gpt-oss-120b) on AWS EC2 with GPU support.
+This is a standalone vLLM deployment for serving large language models (like openai/gpt-oss-20b) on AWS EC2 with GPU support.
 
 ## Architecture
 
@@ -51,7 +51,7 @@ This will create:
 
 The instance takes ~10-15 minutes to:
 - Download and install vLLM
-- Download the model (can take longer for 120B models)
+- Download the model (can take longer for 20b models)
 - Start the service
 
 Monitor progress:
@@ -75,7 +75,7 @@ terraform output test_curl_command
 curl -X POST "http://<PUBLIC_IP>:8000/v1/chat/completions" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "openai/gpt-oss-120b",
+    "model": "openai/gpt-oss-20b",
     "messages": [
       {"role": "user", "content": "Hello!"}
     ]
@@ -89,7 +89,7 @@ In your main application's `.env`:
 LLM_API_TYPE=openai-compatible
 LLM_API_BASE_URL=http://<PUBLIC_IP>:8000/v1
 LLM_API_KEY=dummy-key
-LLM_MODEL=openai/gpt-oss-120b
+LLM_MODEL=openai/gpt-oss-20b
 ```
 
 ## Cost Management
@@ -134,10 +134,10 @@ terraform output logs_command | bash
 If you get "model not found" errors:
 1. Check if the model exists on HuggingFace
 2. Verify HF_TOKEN if it's a private model
-3. Check available disk space (120B models need ~250GB)
+3. Check available disk space (20b models need ~250GB)
 
 ### Out of Memory
-For 120B models, you may need:
+For 20b models, you may need:
 - Use `p4de.24xlarge` (80GB GPUs) instead of `p4d.24xlarge`
 - Reduce `max_model_len` in terraform.tfvars
 - Adjust `gpu-memory-utilization` in user_data.sh

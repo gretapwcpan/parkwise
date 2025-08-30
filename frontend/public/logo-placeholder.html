@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logo Placeholder Instructions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2196F3;
+        }
+        .instruction-box {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+            border-left: 4px solid #2196F3;
+        }
+        code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .example {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .logo-preview {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: #2196F3;
+            border-radius: 8px;
+        }
+        .logo-preview img {
+            height: 60px;
+            filter: brightness(0) invert(1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚗 ParkingPilot Logo Setup</h1>
+        
+        <div class="instruction-box">
+            <h2>How to Add Your Logo</h2>
+            <p>The logo area has been successfully added to your ParkingPilot application header!</p>
+        </div>
+
+        <h3>📁 Where to Place Your Logo</h3>
+        <div class="example">
+            <p>Place your logo file in the <code>frontend/public/</code> directory with the name:</p>
+            <p><strong><code>logo.png</code></strong></p>
+        </div>
+
+        <h3>🎨 Logo Specifications</h3>
+        <ul>
+            <li><strong>Format:</strong> PNG (recommended for transparency)</li>
+            <li><strong>Recommended Height:</strong> 80-120 pixels (will be scaled to 40px in the app)</li>
+            <li><strong>Background:</strong> Transparent background recommended</li>
+            <li><strong>Color:</strong> The logo will be automatically converted to white if it's dark (using CSS filters)</li>
+        </ul>
+
+        <h3>🔧 Customization Options</h3>
+        <div class="example">
+            <p>If you want to use a different filename or path, update line 163 in <code>frontend/src/App.js</code>:</p>
+            <pre><code>src="/logo.png"  // Change this to your logo path</code></pre>
+        </div>
+
+        <div class="example">
+            <p>To adjust the logo size, modify the CSS in <code>frontend/src/App.css</code>:</p>
+            <pre><code>.app-logo {
+  height: 40px;  // Change this value
+  width: auto;
+  object-fit: contain;
+}</code></pre>
+        </div>
+
+        <h3>💡 Features</h3>
+        <ul>
+            <li>✅ Automatic fallback - if logo.png doesn't exist, the app continues to work normally</li>
+            <li>✅ Responsive design - logo scales appropriately on different screen sizes</li>
+            <li>✅ White filter applied for better visibility on blue header background</li>
+            <li>✅ Maintains aspect ratio automatically</li>
+        </ul>
+
+        <div class="logo-preview">
+            <h3 style="color: white; margin-top: 0;">Preview Area</h3>
+            <p style="color: white;">Your logo will appear here in the header next to "ParkingPilot"</p>
+        </div>
+
+        <h3>🚀 Next Steps</h3>
+        <ol>
+            <li>Add your PNG logo file to <code>frontend/public/logo.png</code></li>
+            <li>Refresh your application</li>
+            <li>Your logo will automatically appear in the header!</li>
+        </ol>
+    </div>
+</body>
+</html>
