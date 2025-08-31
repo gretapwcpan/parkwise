@@ -137,9 +137,13 @@ LLM_MODEL=gpt-20b
 PORT=8001
 ```
 
-## Why OpenAI OSS Models?
+## Why OpenAI OSS 20B Models?
 
-- **No API costs** - Run on your infrastructure
+Based on research from ["The Super Weight in Large Language Models"](https://arxiv.org/pdf/2508.12461v1), a hypothetical OpenAI OSS 20B model would be ideal because:
+
+- **Optimal Size**: 20B parameters hits the sweet spot - large enough for complex understanding, small enough for practical deployment
+- **Super Weights**: Research shows certain weight parameters have disproportionate impact on performance
+- **No API costs** - Run on your infrastructure  
 - **Data privacy** - Your data stays local
 - **Customizable** - Fine-tune for parking queries
 - **Offline capable** - Works without internet
