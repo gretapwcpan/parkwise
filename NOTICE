@@ -1,0 +1,33 @@
+ParkingPilot
+Copyright 2025 ParkingPilot Contributors
+
+This product includes software developed by
+ParkingPilot Contributors (https://github.com/gretapwcpan/parking-space-prototype).
+
+## Third-Party Software
+
+This project includes or depends on the following third-party software:
+
+### Frontend Dependencies
+- React (MIT License)
+- MapLibre GL (BSD-3-Clause License)
+- OpenStreetMap data (ODbL License)
+
+### Backend Dependencies
+- Express.js (MIT License)
+- Socket.io (MIT License)
+- Axios (MIT License)
+
+### LLM Integration
+- Compatible with open-source models:
+  - Mistral (Apache 2.0 License)
+  - Llama 2 (Custom License)
+  - Mixtral (Apache 2.0 License)
+
+### Map Services
+- OpenStreetMap Nominatim (ODbL License for data)
+- OSRM (BSD-2-Clause License)
+- Overpass API (AGPL License for service, ODbL for data)
+
+For specific version information and full license texts of dependencies,
+please refer to the respective package.json files and node_modules directories.

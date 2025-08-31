@@ -190,4 +190,6 @@ Configure MCP in your AI assistant (Claude, etc.) by pointing to:
 
 ## License
 
-MIT
+Apache License 2.0
+
+This project is licensed under the Apache License, Version 2.0. See the [LICENSE](LICENSE) file for details.
