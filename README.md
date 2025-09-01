@@ -69,7 +69,11 @@ External Services (No API keys needed):
 
 - Node.js 14+
 - Python 3.9+
-- GPU recommended for local LLM deployment
+- CUDA-capable GPU (required for vLLM)
+- 16GB+ RAM (32GB recommended for larger models)
+- CUDA 11.8+ and PyTorch 2.0+
+
+**See [INSTALL.md](INSTALL.md) for complete installation instructions**
 
 ## Quick Start
 
@@ -81,20 +85,50 @@ cd parkwise
 npm install
 ```
 
-### 2. Configure LLM (Recommended: OpenAI OSS 20B)
+### 2. Configure LLM with vLLM
 
-Deploy your model with vLLM:
+**Install vLLM:**
 ```bash
+# Install vLLM (requires CUDA-capable GPU)
 pip install vllm
-vllm serve openai/gpt-20b --port 8080
+
+# Verify CUDA is available
+python -c "import torch; print(torch.cuda.is_available())"
+```
+
+**Start Model Server:**
+```bash
+# Option 1: If OpenAI OSS 20B becomes available
+python -m vllm.entrypoints.openai.api_server \
+  --model openai/gpt-oss-20b \
+  --port 8080 \
+  --max-model-len 4096
+
+# Option 2: Use Mistral 7B (recommended alternative)
+python -m vllm.entrypoints.openai.api_server \
+  --model mistralai/Mistral-7B-Instruct-v0.2 \
+  --port 8080 \
+  --max-model-len 4096
+
+# Option 3: Use Mixtral 8x7B (best accuracy, needs 48GB+ VRAM)
+python -m vllm.entrypoints.openai.api_server \
+  --model mistralai/Mixtral-8x7B-Instruct-v0.1 \
+  --port 8080 \
+  --tensor-parallel-size 2  # For multi-GPU
 ```
 
 Configure `llm-service/.env`:
 ```env
 LLM_API_TYPE=openai-compatible
 LLM_API_BASE_URL=http://localhost:8080/v1
-LLM_MODEL=gpt-20b
+LLM_MODEL=mistralai/Mistral-7B-Instruct-v0.2  # or your chosen model
+LLM_API_KEY=dummy  # vLLM doesn't require an API key
+TEMPERATURE=0.3
+MAX_TOKENS=500
+PORT=8001
 ```
+
+**Note:** OpenAI OSS 20B is a theoretical optimal model. If unavailable, Mistral 7B or Mixtral provide excellent performance for parking queries. See [OpenAI OSS 20B Setup Guide](docs/OPENAI_OSS_20B_SETUP.md) for details.
 
 ### 3. Start Services
 
@@ -137,16 +171,23 @@ LLM_MODEL=gpt-20b
 PORT=8001
 ```
 
-## Why OpenAI OSS 20B Models?
+## Why OpenAI OSS 20B?
 
-Based on research from ["The Super Weight in Large Language Models"](https://arxiv.org/pdf/2508.12461v1), a hypothetical OpenAI OSS 20B model would be ideal because:
+Based on research from ["The Super Weight in Large Language Models"](https://arxiv.org/pdf/2508.12461v1), a 20B parameter model represents the optimal size for performance vs. resources.
 
-- **Optimal Size**: 20B parameters hits the sweet spot - large enough for complex understanding, small enough for practical deployment
-- **Super Weights**: Research shows certain weight parameters have disproportionate impact on performance
+**Recommended Models for vLLM:**
+- **Mistral 7B**: Fast, efficient, great for parking queries
+- **Mixtral 8x7B**: Most accurate, closest to theoretical 20B performance
+- **Custom Model**: Create your own "OpenAI OSS 20B" using our script
+
+**Benefits of local LLM deployment:**
 - **No API costs** - Run on your infrastructure  
 - **Data privacy** - Your data stays local
 - **Customizable** - Fine-tune for parking queries
 - **Offline capable** - Works without internet
+- **Fast response** - No network latency
+
+See [OpenAI OSS 20B Setup Guide](docs/OPENAI_OSS_20B_SETUP.md) for complete instructions.
 
 ## Project Structure
 

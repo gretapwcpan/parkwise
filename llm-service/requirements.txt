@@ -1,24 +1,21 @@
-# FastAPI and server
+# Core dependencies (required for all modes)
 fastapi==0.109.0
 uvicorn[standard]==0.27.0
 python-dotenv==1.0.0
 pydantic==2.5.3
-
-# LangChain and LLM
-langchain==0.1.0
-langgraph==0.0.26
-langchain-openai==0.0.5
-langchain-anthropic==0.0.1
-langchain-core==0.1.23
-langsmith==0.0.87
-langchain-aws==0.1.0
-
-# AWS SDK for Bedrock
-boto3==1.34.0
-botocore==1.34.0
-
-# HTTP client
-httpx==0.26.0
-
-# Additional dependencies
 requests==2.32.3
+
+# OpenAI-compatible API mode
+openai>=1.0.0
+
+# vLLM mode (GPU)
+vllm==0.5.0
+torch>=2.0.0
+transformers>=4.40.0
+accelerate>=0.27.0
+
+# llama.cpp mode (CPU)
+llama-cpp-python==0.2.0
+
+# Optional but recommended
+numpy>=1.24.0
