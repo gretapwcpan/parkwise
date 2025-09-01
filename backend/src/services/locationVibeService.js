@@ -1,5 +1,6 @@
 const axios = require('axios');
 const cacheService = require('./cacheService');
+const geocodingService = require('./geocodingService');
 
 // Overpass API for fetching POI data from OpenStreetMap
 const OVERPASS_API_URL = 'https://overpass-api.de/api/interpreter';
@@ -576,19 +577,35 @@ const locationVibeService = {
         limit
       );
       
-      // If we have enough cached results, return them
+      // If we have enough cached results, return them with real location names
       if (similarLocations.length >= Math.min(limit, 3)) {
+        const enrichedLocations = await Promise.all(
+          similarLocations.map(async (loc) => {
+            // Generate the location name from the data
+            const locationName = this.generateLocationName(loc.data || loc);
+            // Get real district name from geocoding
+            const districtName = await this.getDistrictFromLocation(loc);
+            // Get area description
+            const areaDesc = this.getAreaDescription(loc.data || loc);
+            
+            return {
+              lat: loc.lat,
+              lng: loc.lng,
+              name: locationName,
+              district: districtName,
+              area: areaDesc,
+              score: loc.score,
+              summary: loc.summary,
+              parkingDifficulty: loc.parkingDifficulty,
+              matchingTags: loc.matchingTags,
+              matchCount: loc.matchCount
+            };
+          })
+        );
+        
         return {
           success: true,
-          similarLocations: similarLocations.map(loc => ({
-            lat: loc.lat,
-            lng: loc.lng,
-            score: loc.score,
-            summary: loc.summary,
-            parkingDifficulty: loc.parkingDifficulty,
-            matchingTags: loc.matchingTags,
-            matchCount: loc.matchCount
-          })),
+          similarLocations: enrichedLocations,
           fromCache: true,
           message: `Found ${similarLocations.length} similar locations`
         };
@@ -610,11 +627,14 @@ const locationVibeService = {
         return hashtags.some(tag => locHashtags.includes(tag));
       });
       
-      return {
-        success: true,
-        similarLocations: filtered.slice(0, limit).map(loc => ({
+      // Enrich filtered locations with real district names
+      const enrichedFiltered = await Promise.all(
+        filtered.slice(0, limit).map(async (loc) => ({
           lat: loc.lat,
           lng: loc.lng,
+          name: this.generateLocationName(loc.data),
+          district: await this.getDistrictFromLocation(loc),
+          area: this.getAreaDescription(loc.data),
           distance: loc.distance,
           score: loc.data.vibe?.score || 0,
           summary: loc.data.vibe?.summary || '',
@@ -623,7 +643,12 @@ const locationVibeService = {
             ...(loc.data.vibe?.hashtags || []),
             ...(loc.data.parking?.hashtags || [])
           ]
-        })),
+        }))
+      );
+      
+      return {
+        success: true,
+        similarLocations: enrichedFiltered,
         fromCache: true,
         message: `Found ${filtered.length} similar locations within 5km`
       };
@@ -672,6 +697,128 @@ const locationVibeService = {
     }
     
     return results;
+  },
+
+  /**
+   * Generate a location name based on its characteristics
+   */
+  generateLocationName(locData) {
+    if (!locData) return 'Unknown Location';
+    
+    const primaryType = locData.vibe?.primaryType;
+    const score = locData.vibe?.score || 0;
+    const hashtags = locData.vibe?.hashtags || [];
+    
+    // More specific location names based on hashtags and type
+    if (hashtags.includes('#FoodieParadise')) {
+      return score >= 7 ? 'Gourmet Food District' : 'Local Food Hub';
+    }
+    if (hashtags.includes('#ShoppingDistrict')) {
+      return score >= 7 ? 'Premium Shopping Center' : 'Shopping Plaza';
+    }
+    if (hashtags.includes('#CafeHopping')) {
+      return 'Artisan Coffee District';
+    }
+    if (hashtags.includes('#NightlifeHub')) {
+      return 'Entertainment Quarter';
+    }
+    if (hashtags.includes('#StudentArea')) {
+      return 'University Campus Area';
+    }
+    if (hashtags.includes('#GreenSpaces')) {
+      return 'Park & Recreation Zone';
+    }
+    if (hashtags.includes('#QuietArea')) {
+      return 'Peaceful Residential Zone';
+    }
+    if (hashtags.includes('#BusyArea')) {
+      return 'Central Business Hub';
+    }
+    
+    // Fallback to generic names based on primary type
+    const nameMap = {
+      restaurants: 'Dining District',
+      cafes: 'Coffee Quarter',
+      shops: 'Retail Center',
+      entertainment: 'Entertainment Zone',
+      parks: 'Green District',
+      education: 'Academic Quarter',
+      residential: 'Residential Community',
+      mixed: 'Mixed-Use Development'
+    };
+    
+    const baseName = nameMap[primaryType] || 'Urban District';
+    
+    // Add qualifier based on score
+    if (score >= 8) {
+      return `Premium ${baseName}`;
+    } else if (score >= 6) {
+      return baseName;
+    } else {
+      return `Emerging ${baseName}`;
+    }
+  },
+
+  /**
+   * Get real district/neighborhood name from location using geocoding
+   */
+  async getDistrictFromLocation(loc) {
+    try {
+      const lat = loc.lat || 0;
+      const lng = loc.lng || 0;
+      
+      // Use the geocoding service to get real address information
+      const addressInfo = await geocodingService.getAddressFromCoordinates(lat, lng);
+      
+      // Return neighborhood, city, or a combination
+      if (addressInfo.neighborhood) {
+        return addressInfo.neighborhood;
+      } else if (addressInfo.city) {
+        return addressInfo.city;
+      } else {
+        // Fallback to coordinates if no address found
+        return `Area near ${lat.toFixed(3)}, ${lng.toFixed(3)}`;
+      }
+    } catch (error) {
+      console.error('Error getting district name:', error);
+      // Fallback to simple geographic description
+      return 'Local Area';
+    }
+  },
+
+  /**
+   * Get area description based on location data
+   */
+  getAreaDescription(locData) {
+    if (!locData) return 'Urban area';
+    
+    const vibe = locData.vibe;
+    const parking = locData.parking;
+    
+    if (!vibe) return 'Urban area';
+    
+    // Build description based on characteristics
+    const descriptions = [];
+    
+    if (vibe.characteristics?.pace === 'Fast-paced') {
+      descriptions.push('Bustling');
+    } else {
+      descriptions.push('Quiet');
+    }
+    
+    if (parking?.level === 'Easy') {
+      descriptions.push('accessible');
+    } else if (parking?.level === 'Very Difficult') {
+      descriptions.push('congested');
+    }
+    
+    if (vibe.primaryType) {
+      descriptions.push(vibe.primaryType);
+    }
+    
+    descriptions.push('area');
+    
+    return descriptions.join(' ');
   }
 };
 

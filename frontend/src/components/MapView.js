@@ -82,8 +82,8 @@ const MapView = ({ parkingSpots, onSpotSelect, selectedSpot, userId, userLocatio
     // Add navigation controls
     map.current.addControl(new maplibregl.NavigationControl(), 'top-right');
     
-    // Add right-click handler for pinning locations
-    map.current.on('contextmenu', (e) => {
+    // Function to handle location pinning
+    const handleLocationPin = (e) => {
       e.preventDefault();
       const { lng, lat } = e.lngLat;
       
@@ -109,7 +109,13 @@ const MapView = ({ parkingSpots, onSpotSelect, selectedSpot, userId, userLocatio
       if (onLocationPinned) {
         onLocationPinned({ lat, lng });
       }
-    });
+    };
+    
+    // Add right-click handler for pinning locations
+    map.current.on('contextmenu', handleLocationPin);
+    
+    // Also add double-click handler for easier testing
+    map.current.on('dblclick', handleLocationPin);
   }, []); // Remove dependencies to only init once
 
   // Display navigation route on map
@@ -617,6 +623,48 @@ const MapView = ({ parkingSpots, onSpotSelect, selectedSpot, userId, userLocatio
         <div className="connection-status">
           {connected ? '🟢 Connected' : '🔴 Disconnected'}
         </div>
+        <button 
+          onClick={() => {
+            // Trigger LocationVibe panel with a test location
+            if (onLocationPinned) {
+              const testLat = userLocation?.latitude || 25.0330;
+              const testLng = userLocation?.longitude || 121.5654;
+              
+              // Add pin marker
+              if (pinnedLocationRef.current) {
+                pinnedLocationRef.current.remove();
+              }
+              
+              const el = document.createElement('div');
+              el.innerHTML = '📌';
+              el.style.fontSize = '30px';
+              el.style.cursor = 'pointer';
+              
+              pinnedLocationRef.current = new maplibregl.Marker({
+                element: el,
+                anchor: 'bottom'
+              })
+                .setLngLat([testLng, testLat])
+                .addTo(map.current);
+              
+              onLocationPinned({ lat: testLat, lng: testLng });
+            }
+          }}
+          style={{
+            padding: '8px 16px',
+            background: 'linear-gradient(135deg, #667eea, #764ba2)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: '500',
+            marginTop: '10px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+          }}
+        >
+          📍 Analyze Location Vibe
+        </button>
         {parkingSpots && parkingSpots.length > 0 && (
           <div className="parking-count">
             📍 {parkingSpots.length} spots within {searchRadius}m

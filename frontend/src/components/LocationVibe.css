@@ -264,10 +264,23 @@
   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
 }
 
+.similar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.similar-name {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
 .similar-score {
   font-weight: 600;
   color: #667eea;
-  margin-bottom: 4px;
+  font-size: 13px;
 }
 
 .similar-tags {

@@ -182,8 +182,13 @@ const LocationVibe = ({ location, onClose, onFindSimilar, onHashtagClick }) => {
               <div className="similar-list">
                 {similarLocations.slice(0, 5).map((loc, idx) => (
                   <div key={idx} className="similar-item">
-                    <div className="similar-score">
-                      {loc.matchCount ? `${loc.matchCount} matches` : `Score: ${loc.score}/10`}
+                    <div className="similar-header">
+                      <div className="similar-name">
+                        {loc.name || loc.district || loc.area || `Location ${idx + 1}`}
+                      </div>
+                      <div className="similar-score">
+                        {loc.matchCount ? `${loc.matchCount} matches` : `Score: ${loc.score}/10`}
+                      </div>
                     </div>
                     <div className="similar-tags">
                       {Array.isArray(loc.matchingTags) 
