@@ -1,7 +1,7 @@
 {
-  "name": "parking-space-frontend",
+  "name": "parkwise-frontend",
   "version": "1.0.0",
-  "description": "Frontend for parking pilot prototype",
+  "description": "Frontend for Parkwise - AI-powered parking system",
   "main": "index.js",
   "license": "Apache-2.0",
   "scripts": {

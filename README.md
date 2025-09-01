@@ -1,4 +1,4 @@
-# ParkingPilot
+# Parkwise
 
 AI-powered parking space booking system with real-time navigation and natural language search.
 
@@ -76,8 +76,8 @@ External Services (No API keys needed):
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/gretapwcpan/parking-space-prototype.git
-cd parking-space-prototype
+git clone https://github.com/gretapwcpan/parkwise.git
+cd parkwise
 npm install
 ```
 

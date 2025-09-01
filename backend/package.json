@@ -1,7 +1,7 @@
 {
-  "name": "parking-space-backend",
+  "name": "parkwise-backend",
   "version": "1.0.0",
-  "description": "Backend for parking pilot prototype",
+  "description": "Backend for Parkwise - AI-powered parking system",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",

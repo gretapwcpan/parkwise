@@ -1,5 +1,5 @@
 {
-  "name": "parking-space-prototype",
+  "name": "parkwise",
   "version": "1.0.0",
   "description": "A cross-platform parking space booking system with real-time navigation",
   "private": true,
@@ -28,7 +28,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gretapwcpan/parking-space-prototype.git"
+    "url": "git+https://github.com/gretapwcpan/parkwise.git"
   },
   "keywords": [
     "parking",
@@ -42,7 +42,7 @@
   "author": "",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/gretapwcpan/parking-space-prototype/issues"
+    "url": "https://github.com/gretapwcpan/parkwise/issues"
   },
-  "homepage": "https://github.com/gretapwcpan/parking-space-prototype#readme"
+  "homepage": "https://github.com/gretapwcpan/parkwise#readme"
 }

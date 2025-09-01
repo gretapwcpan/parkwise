@@ -1,7 +1,7 @@
 {
-  "name": "parking-mcp-server",
+  "name": "parkwise-mcp",
   "version": "1.0.0",
-  "description": "MCP server for parking space booking system",
+  "description": "MCP server for Parkwise - AI-powered parking system",
   "main": "server.js",
   "type": "module",
   "scripts": {
