@@ -1,5 +1,9 @@
 packages:
-  - 'backend'
-  - 'frontend'
-  - 'admin-dashboard'
-  - 'shared/**'
+  - packages/*
+  - vllm-deployment
+  - docs
+
+onlyBuiltDependencies:
+  - core-js
+  - core-js-pure
+  - protobufjs

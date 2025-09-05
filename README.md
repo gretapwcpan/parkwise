@@ -33,7 +33,7 @@ AI-powered parking space booking system with real-time navigation and natural la
                     ┌───────▼────────┐
                     │                │
                     │  Express Backend│
-                    │   (Port 3001)  │
+                    │   (Port 5000)  │
                     │                │
                     └───┬────────┬───┘
                         │        │
@@ -82,8 +82,38 @@ External Services (No API keys needed):
 ```bash
 git clone https://github.com/gretapwcpan/parkwise.git
 cd parkwise
+
+# Install root dependencies (required for monorepo)
 npm install
+
+# Install backend dependencies
+cd packages/backend && npm install && cd ../..
+
+# Install frontend dependencies
+cd packages/frontend && npm install && cd ../..
+
+# Install LLM service dependencies (optional)
+cd packages/llm-service && pip install fastapi uvicorn python-dotenv pydantic requests && cd ../..
 ```
+
+### 🌍 Global Demo Mode
+
+The app now includes demo data for major cities worldwide! No more Taipei-only limitations:
+
+**Available Demo Cities:**
+- 🗽 **New York, USA** - Times Square, Central Park, Wall Street
+- 🌉 **San Francisco, USA** - Golden Gate, Fisherman's Wharf, Union Square  
+- 🇬🇧 **London, UK** - Westminster, Tower Bridge, Covent Garden
+- 🗼 **Paris, France** - Eiffel Tower, Champs-Élysées, Louvre
+- 🗾 **Tokyo, Japan** - Shibuya, Ginza, Asakusa
+- 🏯 **Taipei, Taiwan** - Taipei 101, Xinyi District
+
+**Features:**
+- Auto-detects nearest city based on your location
+- Proper currency display (USD, EUR, GBP, JPY, TWD)
+- Localized distance units (miles for US, kilometers elsewhere)
+- Recognizable landmarks for each city
+- No API keys required - works immediately!
 
 ### 2. Configure LLM with vLLM
 
@@ -132,15 +162,43 @@ PORT=8001
 
 ### 3. Start Services
 
+**Start each service in a separate terminal:**
+
+**Terminal 1 - Backend (Required):**
 ```bash
-npm run dev
+cd packages/backend
+npm start
+# Server will run on port 5000
 ```
+
+**Terminal 2 - Frontend (Required):**
+```bash
+cd packages/frontend
+npm start
+# Application will run on port 3000
+# When prompted if port 3000 is in use, choose 'n' to keep it on 3000
+```
+
+**Terminal 3 - LLM Service (Optional):**
+```bash
+cd packages/llm-service
+python app.py
+# Service will run on port 8001
+# Only needed for Location Intelligence feature
+```
+
+**Important Notes:**
+- The backend MUST be started before the frontend
+- The LLM service is optional - the app works without it, but Location Intelligence won't function
+
 
 ### 4. Access
 
 - Frontend: http://localhost:3000
-- Backend API: http://localhost:3001
+- Backend API: http://localhost:5000
 - LLM Service: http://localhost:8001
+
+**Note:** The backend runs on port 5000 by default, not 3001 as previously documented.
 
 ## Testing
 
@@ -159,7 +217,7 @@ npm run dev
 
 ### Backend (.env)
 ```env
-PORT=3001
+PORT=5000
 LLM_SERVICE_URL=http://localhost:8001
 ```
 
@@ -192,11 +250,13 @@ See [OpenAI OSS 20B Setup Guide](docs/OPENAI_OSS_20B_SETUP.md) for complete inst
 ## Project Structure
 
 ```
-├── frontend/          # React app with voice integration
-├── backend/           # Express API
-├── llm-service/       # LLM integration
-├── mcp-server/        # MCP tools for AI assistants
-└── docs/             # Documentation
+├── packages/
+│   ├── frontend/      # React app with voice integration
+│   ├── backend/       # Express API
+│   ├── llm-service/   # LLM integration
+│   └── mcp-server/    # MCP tools for AI assistants
+├── docs/              # Documentation
+└── package.json       # Root package configuration
 ```
 
 ## Voice & Hands-Free Features

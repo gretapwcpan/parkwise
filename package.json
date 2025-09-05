@@ -23,8 +23,9 @@
     "frontend"
   ],
   "devDependencies": {
+    "@craco/craco": "^7.1.0",
     "concurrently": "^7.6.0",
-    "turbo": "^1.10.0"
+    "turbo": "^1.13.4"
   },
   "repository": {
     "type": "git",
@@ -44,5 +45,10 @@
   "bugs": {
     "url": "https://github.com/gretapwcpan/parkwise/issues"
   },
-  "homepage": "https://github.com/gretapwcpan/parkwise#readme"
+  "homepage": "https://github.com/gretapwcpan/parkwise#readme",
+  "dependencies": {
+    "@eslint/js": "^9.34.0",
+    "eslint": "^9.34.0",
+    "eslint-plugin-react": "^7.37.5"
+  }
 }
