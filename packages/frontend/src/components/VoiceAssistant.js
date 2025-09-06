@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import VoiceAvatar from './VoiceAvatar';
 import './VoiceAssistant.css';
 
 const VoiceAssistant = () => {
@@ -14,6 +15,7 @@ const VoiceAssistant = () => {
   const [errorMessage, setErrorMessage] = useState(''); // Track error messages
   const [permissionStatus, setPermissionStatus] = useState(''); // Track permission status
   const [micLevel, setMicLevel] = useState(0); // Track microphone input level
+  const [avatarState, setAvatarState] = useState('idle'); // Avatar animation state
   const savedPositionRef = useRef(null);
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
@@ -130,6 +132,7 @@ const VoiceAssistant = () => {
       synthRef.current.cancel();
       
       setIsSpeaking(true);
+      setAvatarState('speaking');
       console.log('Speaking:', text);
       
       // Small delay to ensure cancel completes
@@ -155,6 +158,7 @@ const VoiceAssistant = () => {
         utterance.onend = () => {
           console.log('Speech synthesis ended successfully');
           setIsSpeaking(false);
+          setAvatarState('idle');
           if (callback) {
             callback();
           }
@@ -170,6 +174,7 @@ const VoiceAssistant = () => {
             }
           }
           setIsSpeaking(false);
+          setAvatarState('idle');
           // Still call callback even if speech fails
           if (callback) {
             setTimeout(callback, 100);
@@ -202,6 +207,7 @@ const VoiceAssistant = () => {
   // Define stopListening function with useCallback
   const stopListening = useCallback(() => {
     setIsListening(false); // Set this first to prevent restart
+    setAvatarState('idle');
     if (recognitionRef.current) {
       try {
         recognitionRef.current.abort(); // Use abort instead of stop
@@ -226,6 +232,7 @@ const VoiceAssistant = () => {
 
   const processVoiceCommand = async (command) => {
     setIsProcessing(true);
+    setAvatarState('processing');
     
     try {
       // Send to backend for natural language processing with LLM
@@ -329,6 +336,9 @@ const VoiceAssistant = () => {
       speak(errorMessage);
     } finally {
       setIsProcessing(false);
+      if (!isSpeaking) {
+        setAvatarState(isListening ? 'listening' : 'idle');
+      }
     }
   };
 
@@ -438,6 +448,7 @@ const VoiceAssistant = () => {
     setResponse('');
     setErrorMessage('');
     setIsListening(true);
+    setAvatarState('listening');
     
     // Check if speech recognition is available
     if (!recognitionRef.current) {
@@ -696,18 +707,26 @@ const VoiceAssistant = () => {
           </button>
         </div>
         
-        <button 
-          className={`voice-button ${isListening ? 'listening' : ''} ${isProcessing ? 'processing' : ''}`}
+        {/* Clickable Animated Avatar */}
+        <VoiceAvatar 
+          state={avatarState} 
           onClick={toggleListening}
           disabled={isProcessing}
-        >
-          <div className="voice-icon">
-            {isProcessing ? '⚡' : isListening ? '🎤' : '🎙️'}
-          </div>
-          <div className="voice-status">
-            {isProcessing ? 'Processing...' : isListening ? 'Listening...' : isSpeaking ? 'Speaking...' : 'Click to speak'}
-          </div>
-        </button>
+        />
+        
+        {/* Status text below avatar */}
+        <div style={{
+          textAlign: 'center',
+          fontSize: '14px',
+          color: '#666',
+          marginBottom: '10px',
+          fontWeight: '500'
+        }}>
+          {isProcessing ? 'Processing...' : 
+           isListening ? 'Listening... Click to stop' : 
+           isSpeaking ? 'Speaking...' : 
+           'Click avatar to speak'}
+        </div>
 
         {(isListening || isSpeaking) && (
           <>
