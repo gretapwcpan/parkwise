@@ -13,6 +13,7 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const navigationRoutes = require('./routes/navigationRoutes');
 const vibeRoutes = require('./routes/vibeRoutes');
 const cityRoutes = require('./routes/cityRoutes');
+const searchRoutes = require('./routes/searchRoutes');
 
 // Import services
 const firebaseService = require('./services/firebaseService');
@@ -60,6 +61,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/navigation', navigationRoutes);
 app.use('/api/vibe', vibeRoutes);
 app.use('/api/cities', cityRoutes);
+app.use('/api/search', searchRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

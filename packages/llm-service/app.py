@@ -51,6 +51,7 @@ class SearchResponse(BaseModel):
     intent: Dict[str, Any]
     entities: Dict[str, Any]
     filters: Dict[str, Any]
+    response: Optional[str] = None  # Natural language response for non-parking queries
     mode: str
     error: Optional[str] = None
 
@@ -69,32 +70,31 @@ class VibeResponse(BaseModel):
     error: Optional[str] = None
 
 # Prompts
-SEARCH_PROMPT = """You are a parking search assistant. Analyze the user's query and extract structured information.
+SEARCH_PROMPT = """Analyze this query: "{query}"
 
-Query: "{query}"
+If the query contains words like "parking", "park", "spot", "garage", "cheap", "near", "find", "show", "covered", "EV", then it's about parking.
+If the query is "who are you", "what are you", "what can you do", it's asking about the assistant.
+If the query is "hello", "hi", "hey", "good morning", it's a greeting.
+Otherwise, it's off-topic.
 
-Return a JSON object with:
+Return JSON:
 {{
   "intent": {{
-    "type": "find_parking|check_availability|get_directions|price_inquiry",
-    "confidence": 0.0-1.0
+    "type": "parking_search" or "system_inquiry" or "greeting" or "off_topic",
+    "confidence": 0.8
   }},
+  "response": "I'm your parking assistant! I help you find the best parking spots in your area." (for system_inquiry) or "Hello! I'm here to help you find parking." (for greeting) or "I specialize in parking. How can I help you find parking?" (for off_topic) or "" (for parking_search),
   "entities": {{
-    "location": "specific place if mentioned",
-    "price_range": "budget constraints",
-    "duration": "hourly|daily|monthly",
-    "features": ["list", "of", "features"],
-    "time": "when needed"
+    "location": null,
+    "price_range": null,
+    "features": []
   }},
   "filters": {{
-    "max_price": null or number,
-    "min_price": null or number,
+    "max_price": null,
     "required_features": [],
     "radius": 500
   }}
-}}
-
-Return ONLY valid JSON."""
+}}"""
 
 VIBE_PROMPT = """Analyze this location and provide parking insights.
 
@@ -268,9 +268,10 @@ async def search_parking(request: SearchRequest):
         return SearchResponse(
             success=True,
             query=request.query,
-            intent=result.get("intent", {"type": "find_parking", "confidence": 0.8}),
+            intent=result.get("intent", {"type": "parking_search", "confidence": 0.8}),
             entities=result.get("entities", {}),
             filters=result.get("filters", {"radius": 500}),
+            response=result.get("response", None),
             mode=current_mode
         )
         

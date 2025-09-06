@@ -245,6 +245,48 @@ const geocodingService = {
     return Math.round(R * c); // Distance in meters
   },
 
+  // Simple reverse geocode method for getting address string
+  async reverseGeocode(latitude, longitude) {
+    try {
+      const addressInfo = await this.getAddressFromCoordinates(latitude, longitude);
+      return addressInfo.fullAddress;
+    } catch (error) {
+      console.error('Error in reverse geocoding:', error);
+      return null;
+    }
+  },
+
+  // Forward geocoding - get coordinates from address
+  async geocode(address) {
+    try {
+      const url = `${NOMINATIM_BASE_URL}/search`;
+      const response = await axios.get(url, {
+        params: {
+          q: address,
+          format: 'json',
+          limit: 1,
+          addressdetails: 1
+        },
+        headers: {
+          'User-Agent': 'ParkingSpaceApp/1.0'
+        }
+      });
+
+      if (response.data && response.data.length > 0) {
+        const result = response.data[0];
+        return {
+          lat: parseFloat(result.lat),
+          lng: parseFloat(result.lon),
+          display_name: result.display_name
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('Error in geocoding:', error);
+      return null;
+    }
+  },
+
   // Get nearby parking spots with address information
   async enrichParkingSpots(parkingSpots) {
     try {

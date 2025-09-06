@@ -51,7 +51,10 @@ const VoiceAssistant = () => {
     recognitionRef.current.maxAlternatives = 1;
 
     recognitionRef.current.onerror = (event) => {
-      console.error('Speech recognition error:', event.error);
+      // Only log errors that are not expected
+      if (event.error !== 'aborted' && event.error !== 'no-speech') {
+        console.error('Speech recognition error:', event.error);
+      }
       
       // Provide user-friendly error messages
       let userMessage = '';
@@ -71,7 +74,8 @@ const VoiceAssistant = () => {
           userMessage = 'Network error. Please check your internet connection.';
           break;
         case 'aborted':
-          console.log('Speech recognition aborted');
+          // This is expected when we stop listening, don't show error
+          console.log('Speech recognition stopped');
           return; // Don't show error for aborted
         default:
           userMessage = `Speech recognition error: ${event.error}`;
@@ -224,16 +228,16 @@ const VoiceAssistant = () => {
     setIsProcessing(true);
     
     try {
-      // Send to backend for natural language processing
+      // Send to backend for natural language processing with LLM
       const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
-      const response = await fetch(`${API_BASE_URL}/api/locations/search/natural`, {
+      const response = await fetch(`${API_BASE_URL}/api/search/nl`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           query: command,
-          userLocation: {
+          location: {
             lat: 25.0330,
             lng: 121.5654
           }
@@ -241,12 +245,42 @@ const VoiceAssistant = () => {
       });
 
       const data = await response.json();
-      console.log('Natural language search response:', data);
+      console.log('Natural language search response:', {
+        success: data.success,
+        query: command,
+        source: data.source || 'unknown',
+        isSystemResponse: data.isSystemResponse,
+        results: `Array(${data.results?.length || 0})`
+      });
+      
+      // Add source indicator
+      const sourceIndicator = data.source === 'keyword_fallback' ? '[⚡ Quick] ' : 
+                             data.source === 'llm' ? '[🤖 AI] ' : 
+                             data.source === 'fallback_search' ? '[🔍 Basic] ' : '';
       
       let responseText = '';
       
+      // Show what the LLM understood if available
+      if (data.understanding) {
+        console.log('LLM Understanding:', data.understanding);
+        // You could display this in the UI if needed
+      }
+      
+      // Check if this is a system response (non-parking query)
+      if (data.isSystemResponse) {
+        responseText = data.message || "I'm your parking assistant. How can I help you find parking today?";
+        responseText += " Say 'stop' when you're done.";
+      }
+      // Use the message from backend if available
+      else if (data.message) {
+        responseText = data.message + ' ';
+        // Only add parking-specific details if there are results
+        if (data.results && data.results.length > 0) {
+          responseText += " Say 'stop' or 'goodbye' to end our conversation.";
+        }
+      }
       // Check if the response was successful and has results
-      if (data.success === true && data.results && data.results.length > 0) {
+      else if (data.success === true && data.results && data.results.length > 0) {
         // Handle successful search with results
         const numSpots = data.results.length;
         responseText = `I found ${numSpots} parking ${numSpots === 1 ? 'spot' : 'spots'} matching your request. `;
@@ -284,8 +318,10 @@ const VoiceAssistant = () => {
         responseText = "I couldn't find any parking spots matching your request. Please try again with a different search. Say 'stop' when you're done.";
       }
       
-      setResponse(responseText);
-      speak(responseText);
+      // Add source indicator to the displayed response
+      const displayText = sourceIndicator + responseText;
+      setResponse(displayText);
+      speak(responseText); // Don't speak the indicator
     } catch (error) {
       console.error('Error processing voice command:', error);
       const errorMessage = "I'm having trouble connecting to the search service. However, there are parking spots available nearby. Please check the map for available spots. Say 'stop' to end.";
