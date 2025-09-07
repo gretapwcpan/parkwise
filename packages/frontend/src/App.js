@@ -243,8 +243,7 @@ function App() {
                     borderRadius: '4px',
                     cursor: 'pointer'
                   }}
-                >
-                  Reset to My Location
+                >              
                 </button>
               )}
               {loading && <span className="loading-indicator"> Loading...</span>}
@@ -350,68 +349,78 @@ function App() {
           )}
           
           {showLocationVibe && pinnedLocation && (
-            <LocationVibe
-              location={pinnedLocation}
-              onClose={() => {
-                setShowLocationVibe(false);
-                setPinnedLocation(null);
-                setActiveHashtags([]);
-                setHashtagLocations([]);
-              }}
-              onHashtagClick={(hashtag, isActive) => {
-                if (isActive) {
-                  // Add hashtag and generate mock locations
-                  setActiveHashtags([...activeHashtags, hashtag]);
+            <DraggablePanel
+              title="✨ Location Vibe"
+              className="location-intelligence-panel"
+              defaultPosition={{ x: window.innerWidth - 400, y: 200 }}
+              minWidth={350}
+              startMinimized={false}
+              panelId="location-intelligence"
+              canMinimize={true}
+            >
+              <LocationVibe
+                location={pinnedLocation}
+                onClose={() => {
+                  setShowLocationVibe(false);
+                  setPinnedLocation(null);
+                  setActiveHashtags([]);
+                  setHashtagLocations([]);
+                }}
+                onHashtagClick={(hashtag, isActive) => {
+                  if (isActive) {
+                    // Add hashtag and generate mock locations
+                    setActiveHashtags([...activeHashtags, hashtag]);
+                    
+                    // Generate mock locations around the PINNED location, not user location
+                    const centerLocation = pinnedLocation || userLocation || {latitude: 25.0330, longitude: 121.5654};
+                    const mockLocations = generateMockHashtagLocations(hashtag, centerLocation);
+                    setHashtagLocations([...hashtagLocations, ...mockLocations]);
+                  } else {
+                    // Remove hashtag and its locations
+                    setActiveHashtags(activeHashtags.filter(h => h !== hashtag));
+                    setHashtagLocations(hashtagLocations.filter(loc => loc.hashtag !== hashtag));
+                  }
+                }}
+                onFindSimilar={(similarLocs) => {
+                  // Silently handle the similar locations without showing an alert
+                  // The LocationVibe component will handle the display
+                  console.log('Similar locations found:', similarLocs);
+                }}
+                onLocationClick={(clickedLocation) => {
+                  // Navigate to the clicked location on the map
+                  console.log('App.js - Navigating to:', clickedLocation);
+                  console.log('App.js - Setting search center to:', {
+                    latitude: clickedLocation.lat,
+                    longitude: clickedLocation.lng
+                  });
                   
-                  // Generate mock locations around the PINNED location, not user location
-                  const centerLocation = pinnedLocation || userLocation || {latitude: 25.0330, longitude: 121.5654};
-                  const mockLocations = generateMockHashtagLocations(hashtag, centerLocation);
-                  setHashtagLocations([...hashtagLocations, ...mockLocations]);
-                } else {
-                  // Remove hashtag and its locations
-                  setActiveHashtags(activeHashtags.filter(h => h !== hashtag));
-                  setHashtagLocations(hashtagLocations.filter(loc => loc.hashtag !== hashtag));
-                }
-              }}
-              onFindSimilar={(similarLocs) => {
-                // Silently handle the similar locations without showing an alert
-                // The LocationVibe component will handle the display
-                console.log('Similar locations found:', similarLocs);
-              }}
-              onLocationClick={(clickedLocation) => {
-                // Navigate to the clicked location on the map
-                console.log('App.js - Navigating to:', clickedLocation);
-                console.log('App.js - Setting search center to:', {
-                  latitude: clickedLocation.lat,
-                  longitude: clickedLocation.lng
-                });
-                
-                // Update search center to the clicked location
-                const newSearchCenter = {
-                  latitude: clickedLocation.lat,
-                  longitude: clickedLocation.lng
-                };
-                setSearchCenter(newSearchCenter);
-                
-                // Set navigation destination and open navigation panel
-                setNavigationDestination({ 
-                  lat: clickedLocation.lat, 
-                  lng: clickedLocation.lng,
-                  name: clickedLocation.name 
-                });
-                setShowNavigation(true);
-                
-                console.log('App.js - Opening navigation panel for:', clickedLocation.name);
-                
-                // Close the LocationVibe panel
-                setShowLocationVibe(false);
-                
-                // Clear previous pins and hashtags
-                setPinnedLocation(null);
-                setActiveHashtags([]);
-                setHashtagLocations([]);
-              }}
-            />
+                  // Update search center to the clicked location
+                  const newSearchCenter = {
+                    latitude: clickedLocation.lat,
+                    longitude: clickedLocation.lng
+                  };
+                  setSearchCenter(newSearchCenter);
+                  
+                  // Set navigation destination and open navigation panel
+                  setNavigationDestination({ 
+                    lat: clickedLocation.lat, 
+                    lng: clickedLocation.lng,
+                    name: clickedLocation.name 
+                  });
+                  setShowNavigation(true);
+                  
+                  console.log('App.js - Opening navigation panel for:', clickedLocation.name);
+                  
+                  // Close the LocationVibe panel
+                  setShowLocationVibe(false);
+                  
+                  // Clear previous pins and hashtags
+                  setPinnedLocation(null);
+                  setActiveHashtags([]);
+                  setHashtagLocations([]);
+                }}
+              />
+            </DraggablePanel>
           )}
         </div>
       </SocketProvider>

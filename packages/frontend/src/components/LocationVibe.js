@@ -115,12 +115,7 @@ const LocationVibe = ({ location, onClose, onFindSimilar, onHashtagClick, onLoca
   if (!location) return null;
 
   return (
-    <div className="location-vibe-panel">
-      <div className="vibe-header">
-        <h3>📍Location Intelligence</h3>
-        <button className="close-btn" onClick={onClose}>✕</button>
-      </div>
-
+    <div className="location-vibe-content">
       {loading && (
         <div className="loading">
           <div className="spinner"></div>

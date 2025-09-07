@@ -692,7 +692,7 @@ const MapView = ({ parkingSpots, onSpotSelect, selectedSpot, userId, userLocatio
             boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
           }}
         >
-          📍 Analyze Location Vibe
+          🔍 Location Vibe
         </button>
         {parkingSpots && parkingSpots.length > 0 && (
           <div className="parking-count">

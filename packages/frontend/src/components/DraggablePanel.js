@@ -206,6 +206,7 @@ const DraggablePanel = ({
       >
         <div className="minimized-icon">
           {title?.includes('📍') ? '📍' : 
+           title?.includes('✨') ? '✨' :
            title?.includes('Statistics') ? '📊' : 
            title?.charAt(0) || '📊'}
         </div>
