@@ -36,13 +36,15 @@ const DraggablePanel = ({
       
       // Calculate initial position in the bottom-right stack
       const index = panelOrder.indexOf(panelId);
-      const spacing = 70;
+      const spacing = 60; // Increased spacing to prevent overlap
       const bottomMargin = 20;
       const rightMargin = 20;
+      const panelWidth = 112; // Button width (80% of 140)
+      const panelHeight = 38; // Button height (80% of 48)
       
       setMinimizedPosition({
-        x: window.innerWidth - rightMargin - 60,
-        y: window.innerHeight - bottomMargin - 60 - (spacing * index)
+        x: window.innerWidth - rightMargin - panelWidth,
+        y: window.innerHeight - bottomMargin - panelHeight - (spacing * index)
       });
     }
   }, []);
@@ -141,13 +143,15 @@ const DraggablePanel = ({
       
       // Calculate position in the bottom-right stack
       const index = panelOrder.indexOf(panelId);
-      const spacing = 70; // Space between minimized icons
+      const spacing = 60; // Increased spacing to prevent overlap
       const bottomMargin = 20; // Distance from bottom
       const rightMargin = 20; // Distance from right
+      const panelWidth = 112; // Button width (80% of 140)
+      const panelHeight = 38; // Button height (80% of 48)
       
       setMinimizedPosition({
-        x: window.innerWidth - rightMargin - 60, // 60 is the width of minimized icon
-        y: window.innerHeight - bottomMargin - 60 - (spacing * index)
+        x: window.innerWidth - rightMargin - panelWidth,
+        y: window.innerHeight - bottomMargin - panelHeight - (spacing * index)
       });
     } else {
       // Remove from minimized panels set
@@ -175,13 +179,15 @@ const DraggablePanel = ({
       if (isMinimized) {
         const index = panelOrder.indexOf(panelId);
         if (index !== -1) {
-          const spacing = 70;
+          const spacing = 60; // Increased spacing to prevent overlap
           const bottomMargin = 20;
           const rightMargin = 20;
+          const panelWidth = 112; // Button width (80% of 140)
+          const panelHeight = 38; // Button height (80% of 48)
           
           setMinimizedPosition({
-            x: window.innerWidth - rightMargin - 60,
-            y: window.innerHeight - bottomMargin - 60 - (spacing * index)
+            x: window.innerWidth - rightMargin - panelWidth,
+            y: window.innerHeight - bottomMargin - panelHeight - (spacing * index)
           });
         }
       }
@@ -192,9 +198,32 @@ const DraggablePanel = ({
   }, [isMinimized, panelId]);
 
   if (isMinimized) {
+    // Extract text from title, removing any emojis
+    let text = title || 'Panel';
+    let panelClass = '';
+    
+    if (title?.includes('Current Location')) {
+      text = 'Current Location';
+      panelClass = 'current-location-panel';
+    } else if (title?.includes('Location Vibe')) {
+      text = 'Location Vibe';
+      panelClass = 'location-vibe-panel';
+    } else if (title?.includes('Statistics')) {
+      text = 'Statistics';
+      panelClass = 'statistics-panel';
+    } else if (title?.includes('Voice')) {
+      text = 'Voice Assistant';
+    } else {
+      // Remove any emoji from the beginning of the title
+      const emojiMatch = title?.match(/^([\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}])/u);
+      if (emojiMatch) {
+        text = title.replace(emojiMatch[0], '').trim();
+      }
+    }
+    
     return (
       <div 
-        className={`draggable-panel-minimized ${className}`}
+        className={`draggable-panel-minimized ${panelClass} ${className}`}
         style={{
           left: `${minimizedPosition.x}px`,
           top: `${minimizedPosition.y}px`,
@@ -202,13 +231,11 @@ const DraggablePanel = ({
           transition: 'all 0.3s ease'
         }}
         onClick={toggleMinimize}
-        title={`Click to expand ${title}`}
+        title={`Click to expand ${text}`}
+        data-panel-id={panelId}
       >
-        <div className="minimized-icon">
-          {title?.includes('📍') ? '📍' : 
-           title?.includes('✨') ? '✨' :
-           title?.includes('Statistics') ? '📊' : 
-           title?.charAt(0) || '📊'}
+        <div className="minimized-content">
+          <span className="minimized-text">{text}</span>
         </div>
       </div>
     );

@@ -15,6 +15,7 @@ import { SocketProvider } from './services/socketService';
 import { ApiProvider } from './services/apiService';
 import { formatPrice, formatDistance } from './utils/localization';
 import './App.css';
+import './components/ActionButtons.css';
 
 // Helper function to generate mock locations with hashtags
 function generateMockHashtagLocations(hashtag, center) {
@@ -175,78 +176,73 @@ function App() {
               <h1>ParkingPilot</h1>
             </div>
             <div className="header-actions">
+              <CitySelector 
+                currentLocation={userLocation}
+                onCityChange={(cityData) => {
+                  setSelectedCity(cityData);
+                  if (cityData) {
+                    setCurrentLocale(cityData.locale || 'en-US');
+                    setCurrentCurrency(cityData.currency || 'USD');
+                    setSearchCenter({
+                      latitude: cityData.center.lat,
+                      longitude: cityData.center.lng
+                    });
+                    if (cityData.spots) {
+                      setParkingSpots(cityData.spots);
+                    }
+                  }
+                }}
+                headerStyle={true}
+              />
               <button 
                 className="my-bookings-btn"
                 onClick={() => setShowMyBookings(true)}
-                style={{
-                  padding: '8px 16px',
-                  background: '#007cbf',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  marginRight: '16px'
-                }}
               >
-                My Bookings
+                📋 My Bookings
               </button>
-              <div className="user-info">User: {user.id}</div>
+              <div className="user-menu">
+                <div className="user-menu-button">
+                  <div className="user-avatar">
+                    {user.id.substring(0, 2).toUpperCase()}
+                  </div>
+                  <span>{user.id.substring(0, 10)}</span>
+                  <span style={{ fontSize: '10px' }}>▼</span>
+                </div>
+              </div>
             </div>
           </header>
 
           <main className="app-main">
-            {/* City Selector */}
-            <CitySelector 
-              currentLocation={userLocation}
-              onCityChange={(cityData) => {
-                setSelectedCity(cityData);
-                if (cityData) {
-                  // Update locale and currency based on selected city
-                  setCurrentLocale(cityData.locale || 'en-US');
-                  setCurrentCurrency(cityData.currency || 'USD');
-                  
-                  // Update search center to the city center
-                  setSearchCenter({
-                    latitude: cityData.center.lat,
-                    longitude: cityData.center.lng
-                  });
-                  
-                  // If city has spots, load them
-                  if (cityData.spots) {
-                    setParkingSpots(cityData.spots);
-                  }
-                }
-              }}
-            />
-            
-            {/* Radius Selector */}
-            <div className="radius-selector">
-              <label>Search Radius: </label>
-              <select value={searchRadius} onChange={(e) => handleRadiusChange(parseInt(e.target.value))}>
-                <option value="100">100m</option>
-                <option value="500">500m</option>
-                <option value="1000">1km</option>
-                <option value="2000">2km</option>
-                <option value="5000">5km</option>
-              </select>
+            {/* Compact Controls Bar - Radius and Reset */}
+            <div className="controls-bar">
+              <div className="control-group">
+                <label className="control-label">Radius</label>
+                <select 
+                  className="control-select"
+                  value={searchRadius} 
+                  onChange={(e) => handleRadiusChange(parseInt(e.target.value))}
+                >
+                  <option value="100">100m</option>
+                  <option value="500">500m</option>
+                  <option value="1000">1km</option>
+                  <option value="2000">2km</option>
+                  <option value="5000">5km</option>
+                </select>
+              </div>
+              
               {searchCenter && (
-                <button 
-                  onClick={resetSearchCenter}
-                  style={{
-                    marginLeft: '10px',
-                    padding: '5px 10px',
-                    background: '#007cbf',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                  }}
-                >              
-                </button>
+                <>
+                  <div className="toolbar-divider" />
+                  <button 
+                    className="control-button"
+                    onClick={resetSearchCenter}
+                  >
+                    📍 My Location
+                  </button>
+                </>
               )}
-              {loading && <span className="loading-indicator"> Loading...</span>}
+              
+              {loading && <span className="loading-indicator">Loading...</span>}
             </div>
 
             {/* Statistics Display - Always show minimized, even without data */}
@@ -354,7 +350,7 @@ function App() {
               className="location-intelligence-panel"
               defaultPosition={{ x: window.innerWidth - 400, y: 200 }}
               minWidth={350}
-              startMinimized={false}
+              startMinimized={true}
               panelId="location-intelligence"
               canMinimize={true}
             >

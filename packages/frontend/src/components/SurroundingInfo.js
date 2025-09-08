@@ -55,7 +55,7 @@ const SurroundingInfo = ({ userLocation }) => {
       className="location-panel"
       defaultPosition={{ x: 20, y: 120 }}
       minWidth={320}
-      startMinimized={false}  // Changed to start expanded
+      startMinimized={true}  // Start minimized like other panels
       panelId="current-location"
     >
       <div className={`surrounding-info ${expanded ? 'expanded' : 'collapsed'}`}>

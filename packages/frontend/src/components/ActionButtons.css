@@ -1,0 +1,316 @@
+/* Breathing animation keyframes - more noticeable */
+@keyframes breathing {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  }
+}
+
+/* Ripple effect animation */
+@keyframes ripple {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+/* Glow pulse animation */
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(102, 126, 234, 0.5),
+                0 0 10px rgba(102, 126, 234, 0.3),
+                0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.8),
+                0 0 30px rgba(102, 126, 234, 0.5),
+                0 8px 24px rgba(0, 0, 0, 0.25);
+  }
+}
+
+/* Unified Action Button Styles */
+.action-btn {
+  /* Standard dimensions */
+  width: 140px;
+  height: 48px;
+  
+  /* Layout */
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 0 16px;
+  
+  /* Style */
+  border: none;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+  
+  /* Transitions */
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  
+  /* Breathing animation - more noticeable */
+  animation: breathing 2s ease-in-out infinite;
+}
+
+
+/* Icon styling */
+.action-btn .btn-icon {
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+/* Text styling */
+.action-btn .btn-text {
+  flex: 1;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Primary button - Voice Helper (keep gradient) */
+.action-btn--primary {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+}
+
+/* Secondary buttons - solid colors */
+.action-btn--stats {
+  background: #4299e1;
+}
+
+.action-btn--location {
+  background: #48bb78;
+}
+
+.action-btn--vibe {
+  background: #9f7aea;
+}
+
+/* Hover states */
+.action-btn:hover {
+  animation: none; /* Stop breathing on hover */
+  transform: translateY(-3px) scale(1.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  filter: brightness(1.2);
+}
+
+
+/* Active/pressed state */
+.action-btn:active,
+.draggable-panel-minimized:active,
+.voice-assistant-fab:active {
+  animation: none !important; /* Stop breathing on click */
+  transform: scale(0.98) translateY(0) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Disabled state */
+.action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  filter: none;
+}
+
+/* Ripple effect on click */
+.action-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.action-btn:active::after {
+  width: 300px;
+  height: 300px;
+}
+
+/* Container for stacked buttons */
+.action-buttons-stack {
+  position: fixed;
+  right: 20px;
+  bottom: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* Uniform 12px spacing */
+  z-index: 100;
+}
+
+/* Voice Assistant FAB - Updated to match */
+.voice-assistant-fab {
+  /* Standard dimensions - 80% of original */
+  width: 112px !important;
+  height: 38px !important;
+  border-radius: 19px !important;
+  padding: 0 12px !important;
+  
+  /* Keep gradient for primary action */
+  background: linear-gradient(135deg, #667eea, #764ba2) !important;
+  
+  /* Layout */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  
+  /* Position - this needs to be set individually */
+  position: fixed !important;
+  z-index: 999 !important;
+  overflow: hidden !important;
+  
+  /* Combined animations - breathing + glow */
+  animation: breathing 2s ease-in-out infinite, 
+             glowPulse 2s ease-in-out infinite !important;
+}
+
+
+.voice-fab-content {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  pointer-events: none !important;
+}
+
+.voice-fab-content .voice-label {
+  color: white !important;
+  font-size: 12px !important; /* Scaled down */
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+  text-align: center !important;
+}
+
+/* Minimized panel button styles - need individual positioning */
+.draggable-panel-minimized {
+  /* Use same dimensions as action buttons - 80% of original */
+  width: 112px !important;
+  height: 38px !important;
+  border-radius: 19px !important;
+  padding: 0 12px !important;
+  
+  /* Layout */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  
+  /* Position */
+  position: fixed !important;
+  overflow: visible !important;
+  
+  /* Transitions */
+  transition: all 0.2s ease !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  
+  /* Font */
+  font-size: 12px !important; /* Scaled down */
+  font-weight: 600 !important;
+  color: white !important;
+  
+  /* Breathing animation - more noticeable */
+  animation: breathing 2s ease-in-out infinite !important;
+}
+
+
+/* Individual panel colors - use gradient for all */
+.draggable-panel-minimized {
+  background: linear-gradient(135deg, #667eea, #764ba2) !important;
+}
+
+/* Specific colors for known panels - all use gradient like Voice Helper */
+.draggable-panel-minimized.statistics-panel {
+  background: linear-gradient(135deg, #667eea, #764ba2) !important;
+}
+
+.draggable-panel-minimized.location-vibe-panel {
+  background: linear-gradient(135deg, #667eea, #764ba2) !important;
+}
+
+.draggable-panel-minimized.current-location-panel {
+  background: linear-gradient(135deg, #667eea, #764ba2) !important;
+}
+
+/* Hover effects for minimized panels */
+.draggable-panel-minimized:hover,
+.voice-assistant-fab:hover {
+  animation: none !important; /* Stop breathing on hover */
+  transform: translateY(-3px) scale(1.1) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+  filter: brightness(1.2) !important;
+}
+
+
+/* Focus states for accessibility */
+.action-btn:focus-visible,
+.draggable-panel-minimized:focus-visible,
+.voice-assistant-fab:focus-visible {
+  outline: 3px solid rgba(66, 153, 225, 0.5);
+  outline-offset: 2px;
+}
+
+/* Media queries for responsive design */
+@media (max-width: 768px) {
+  .action-btn,
+  .draggable-panel-minimized,
+  .voice-assistant-fab {
+    width: 96px !important; /* 80% of 120px */
+    height: 35px !important; /* 80% of 44px */
+    font-size: 11px !important; /* Scaled down */
+  }
+  
+  .action-btn .btn-icon,
+  .voice-fab-content .voice-icon {
+    font-size: 14px !important;
+  }
+  
+  .action-buttons-stack {
+    right: 12px;
+    bottom: 60px;
+    gap: 10px;
+  }
+  
+  /* Positions handled by DraggablePanel.js */
+}
+
+/* Dark mode support (future enhancement) */
+@media (prefers-color-scheme: dark) {
+  .action-btn {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .action-btn:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Ensure proper contrast for WCAG AA compliance */
+.action-btn--stats,
+.action-btn--location,
+.action-btn--vibe,
+.draggable-panel-minimized {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}

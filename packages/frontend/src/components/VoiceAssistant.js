@@ -10,6 +10,7 @@ const VoiceAssistant = () => {
   const [position, setPosition] = useState({ x: window.innerWidth - 370, y: window.innerHeight - 400 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [isDraggingFab, setIsDraggingFab] = useState(false);
   const [isMinimized, setIsMinimized] = useState(true); // Start minimized by default
   const [isSpeaking, setIsSpeaking] = useState(false); // Track if system is speaking
   const [errorMessage, setErrorMessage] = useState(''); // Track error messages
@@ -24,10 +25,10 @@ const VoiceAssistant = () => {
   // Initialize minimized position on mount
   useEffect(() => {
     // Set initial position to bottom-right corner, accounting for other stacked icons
-    // Position it higher to avoid overlap with DraggablePanel icons
+    // Position it at the top of the stack (4 panels below it)
     setPosition({
-      x: window.innerWidth - 80, // 60px width + 20px margin
-      y: window.innerHeight - 290 // Bottom position + space for 3 icons (60px each + 70px spacing)
+      x: window.innerWidth - 160, // Match DraggablePanel positioning
+      y: window.innerHeight - 320 // Top of the stack (4 panels * 60px spacing + margin)
     });
   }, []);
   
@@ -531,6 +532,17 @@ const VoiceAssistant = () => {
   };
 
   const handleMouseDown = (e) => {
+    // Handle FAB dragging
+    if (isMinimized && e.target.closest('.voice-assistant-fab')) {
+      setIsDraggingFab(true);
+      setDragStart({
+        x: e.clientX - position.x,
+        y: e.clientY - position.y
+      });
+      e.preventDefault();
+      return;
+    }
+    
     // Only start dragging if clicking on the header/button area
     if (e.target.closest('.voice-button') && !e.target.closest('button')) {
       return;
@@ -547,13 +559,13 @@ const VoiceAssistant = () => {
   };
 
   const handleMouseMove = (e) => {
-    if (isDragging) {
+    if (isDragging || isDraggingFab) {
       const newX = e.clientX - dragStart.x;
       const newY = e.clientY - dragStart.y;
       
       // Keep within viewport bounds
-      const maxX = window.innerWidth - (isMinimized ? 80 : 370);
-      const maxY = window.innerHeight - (isMinimized ? 80 : 200);
+      const maxX = window.innerWidth - (isMinimized ? 150 : 370);
+      const maxY = window.innerHeight - (isMinimized ? 60 : 200);
       
       setPosition({
         x: Math.max(0, Math.min(newX, maxX)),
@@ -562,11 +574,37 @@ const VoiceAssistant = () => {
     }
   };
 
-  const handleMouseUp = () => {
+  const handleMouseUp = (e) => {
+    // If we were dragging the FAB and the drag distance was minimal, treat it as a click
+    if (isDraggingFab) {
+      const dragDistance = Math.sqrt(
+        Math.pow(e.clientX - (dragStart.x + position.x), 2) + 
+        Math.pow(e.clientY - (dragStart.y + position.y), 2)
+      );
+      
+      // If drag distance is less than 5 pixels, treat as click
+      if (dragDistance < 5) {
+        toggleMinimize();
+      }
+    }
+    
     setIsDragging(false);
+    setIsDraggingFab(false);
   };
 
   const handleTouchStart = (e) => {
+    // Handle FAB dragging on touch
+    if (isMinimized && e.target.closest('.voice-assistant-fab')) {
+      const touch = e.touches[0];
+      setIsDraggingFab(true);
+      setDragStart({
+        x: touch.clientX - position.x,
+        y: touch.clientY - position.y
+      });
+      e.preventDefault();
+      return;
+    }
+    
     if (e.target.closest('.drag-handle')) {
       const touch = e.touches[0];
       setIsDragging(true);
@@ -579,13 +617,13 @@ const VoiceAssistant = () => {
   };
 
   const handleTouchMove = (e) => {
-    if (isDragging) {
+    if (isDragging || isDraggingFab) {
       const touch = e.touches[0];
       const newX = touch.clientX - dragStart.x;
       const newY = touch.clientY - dragStart.y;
       
-      const maxX = window.innerWidth - (isMinimized ? 80 : 370);
-      const maxY = window.innerHeight - (isMinimized ? 80 : 200);
+      const maxX = window.innerWidth - (isMinimized ? 150 : 370);
+      const maxY = window.innerHeight - (isMinimized ? 60 : 200);
       
       setPosition({
         x: Math.max(0, Math.min(newX, maxX)),
@@ -594,8 +632,23 @@ const VoiceAssistant = () => {
     }
   };
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (e) => {
+    // Check if it was a tap on FAB (minimal movement)
+    if (isDraggingFab && e.changedTouches && e.changedTouches[0]) {
+      const touch = e.changedTouches[0];
+      const dragDistance = Math.sqrt(
+        Math.pow(touch.clientX - (dragStart.x + position.x), 2) + 
+        Math.pow(touch.clientY - (dragStart.y + position.y), 2)
+      );
+      
+      // If drag distance is less than 5 pixels, treat as tap
+      if (dragDistance < 5) {
+        toggleMinimize();
+      }
+    }
+    
     setIsDragging(false);
+    setIsDraggingFab(false);
   };
 
   // Add event listeners for mouse and touch events
@@ -611,7 +664,7 @@ const VoiceAssistant = () => {
       document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [isDragging, dragStart, isMinimized]);
+  }, [isDragging, isDraggingFab, dragStart, isMinimized]);
 
   const toggleMinimize = () => {
     const newMinimized = !isMinimized;
@@ -624,21 +677,8 @@ const VoiceAssistant = () => {
       stopListening();
     }
     
-    if (newMinimized) {
-      // Save current position before minimizing
-      savedPositionRef.current = position;
-      
-      // Set position to avoid overlap with DraggablePanel icons
-      setPosition({
-        x: window.innerWidth - 80, // 60px width + 20px margin
-        y: window.innerHeight - 290 // Higher position to stack above other icons
-      });
-    } else {
-      // Restore saved position
-      if (savedPositionRef.current) {
-        setPosition(savedPositionRef.current);
-      }
-    }
+    // Don't change position when toggling minimize state
+    // The button should stay where the user dragged it
   };
 
   if (isMinimized) {
@@ -648,13 +688,16 @@ const VoiceAssistant = () => {
         style={{
           left: `${position.x}px`,
           top: `${position.y}px`,
-          cursor: 'pointer',
-          transition: 'all 0.3s ease'
+          cursor: isDraggingFab ? 'grabbing' : 'grab',
+          transition: isDraggingFab ? 'none' : 'all 0.3s ease'
         }}
-        onClick={toggleMinimize}
-        title="Click to expand voice assistant"
+        onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
+        title="Drag to move or click to expand"
       >
-        <div className="voice-icon">🎙️</div>
+        <div className="voice-fab-content">
+          <span className="voice-label">Voice Helper</span>
+        </div>
       </div>
     );
   }

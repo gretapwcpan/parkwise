@@ -17,7 +17,6 @@ const MapView = ({ parkingSpots, onSpotSelect, selectedSpot, userId, userLocatio
   const markersRef = useRef({});
   const userMarkerRef = useRef(null);
   const radiusCircleRef = useRef(null);
-  const searchCenterMarkerRef = useRef(null);
   const [searchCenter, setSearchCenter] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const routeLayerRef = useRef(null);
@@ -123,8 +122,9 @@ const MapView = ({ parkingSpots, onSpotSelect, selectedSpot, userId, userLocatio
       
       // Create pin marker
       const el = document.createElement('div');
-      el.innerHTML = '📌';
-      el.style.fontSize = '30px';
+      el.innerHTML = '📍';
+      el.style.fontSize = '24px';
+      el.style.filter = 'hue-rotate(45deg)'; // Different color for parking spots
       el.style.cursor = 'pointer';
       
       pinnedLocationRef.current = new maplibregl.Marker({
@@ -275,11 +275,13 @@ const MapView = ({ parkingSpots, onSpotSelect, selectedSpot, userId, userLocatio
         longitude: lngLat.lng,
         latitude: lngLat.lat
       });
+      setIsDragging(true);
     });
     
     userMarkerRef.current.on('dragend', () => {
       map.current.getCanvas().style.cursor = '';
       userEl.style.filter = 'drop-shadow(0 0 10px rgba(33, 150, 243, 0.8))';
+      setIsDragging(false);
       const lngLat = userMarkerRef.current.getLngLat();
       const newLocation = {
         longitude: lngLat.lng,
@@ -374,57 +376,6 @@ const MapView = ({ parkingSpots, onSpotSelect, selectedSpot, userId, userLocatio
       }
     });
 
-    // Add search center marker only when there's a custom search center
-    if (searchCenter && searchCenter !== userLocation) {
-      // Remove existing search center marker if it exists
-      if (searchCenterMarkerRef.current) {
-        searchCenterMarkerRef.current.remove();
-        searchCenterMarkerRef.current = null;
-      }
-
-      // Create search center marker
-      const searchEl = document.createElement('div');
-      searchEl.innerHTML = '🎯';
-      searchEl.style.fontSize = '25px';
-      searchEl.style.cursor = 'move';
-      
-      searchCenterMarkerRef.current = new maplibregl.Marker({
-        element: searchEl,
-        draggable: true
-      })
-        .setLngLat([searchCenter.longitude, searchCenter.latitude])
-        .addTo(map.current);
-      
-      // Attach event listeners to the marker
-      searchCenterMarkerRef.current.on('dragstart', () => {
-        setIsDragging(true);
-        map.current.getCanvas().style.cursor = 'grabbing';
-      });
-
-      searchCenterMarkerRef.current.on('drag', () => {
-        const lngLat = searchCenterMarkerRef.current.getLngLat();
-        setSearchCenter({
-          longitude: lngLat.lng,
-          latitude: lngLat.lat
-        });
-      });
-
-      searchCenterMarkerRef.current.on('dragend', () => {
-        setIsDragging(false);
-        map.current.getCanvas().style.cursor = '';
-        const lngLat = searchCenterMarkerRef.current.getLngLat();
-        const newCenter = {
-          longitude: lngLat.lng,
-          latitude: lngLat.lat
-        };
-        setSearchCenter(newCenter);
-        
-        // Notify parent component if callback is provided
-        if (onSearchCenterChange) {
-          onSearchCenterChange(newCenter);
-        }
-      });
-    }
   }, [userLocation, searchRadius, searchCenter, isDragging, onSearchCenterChange]);
 
   // Add parking spot markers
@@ -652,48 +603,16 @@ const MapView = ({ parkingSpots, onSpotSelect, selectedSpot, userId, userLocatio
         <div className="connection-status">
           {connected ? '🟢 Connected' : '🔴 Disconnected'}
         </div>
-        <button 
-          onClick={() => {
-            // Trigger LocationVibe panel with a test location
-            if (onLocationPinned) {
-              const testLat = userLocation?.latitude || 25.0330;
-              const testLng = userLocation?.longitude || 121.5654;
-              
-              // Add pin marker
-              if (pinnedLocationRef.current) {
-                pinnedLocationRef.current.remove();
-              }
-              
-              const el = document.createElement('div');
-              el.innerHTML = '📌';
-              el.style.fontSize = '30px';
-              el.style.cursor = 'pointer';
-              
-              pinnedLocationRef.current = new maplibregl.Marker({
-                element: el,
-                anchor: 'bottom'
-              })
-                .setLngLat([testLng, testLat])
-                .addTo(map.current);
-              
-              onLocationPinned({ lat: testLat, lng: testLng });
-            }
-          }}
-          style={{
-            padding: '8px 16px',
-            background: 'linear-gradient(135deg, #667eea, #764ba2)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: '500',
-            marginTop: '10px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-          }}
-        >
-          🔍 Location Vibe
-        </button>
+        <div style={{
+          marginTop: '10px',
+          padding: '8px',
+          background: 'rgba(255, 255, 255, 0.9)',
+          borderRadius: '8px',
+          fontSize: '12px',
+          color: '#666'
+        }}>
+          💡 Tip: Right-click or double-click on the map to get location vibe
+        </div>
         {parkingSpots && parkingSpots.length > 0 && (
           <div className="parking-count">
             📍 {parkingSpots.length} spots within {searchRadius}m

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { formatCityName } from '../utils/localization';
 import './CitySelector.css';
 
-function CitySelector({ onCityChange, currentLocation }) {
+function CitySelector({ onCityChange, currentLocation, headerStyle, compact }) {
   const [cities, setCities] = useState([]);
   const [selectedCity, setSelectedCity] = useState('auto'); // Default to auto-detect
   const [loading, setLoading] = useState(false);
@@ -124,18 +124,54 @@ function CitySelector({ onCityChange, currentLocation }) {
     }
   };
 
+  // If headerStyle is true, render as a button-style selector for the header
+  if (headerStyle) {
+    return (
+      <div className="city-selector-header">
+        <select 
+          id="city-select"
+          value={selectedCity} 
+          onChange={handleCityChange}
+          disabled={loading}
+          className="city-select-header"
+          style={{
+            background: 'rgba(255, 255, 255, 0.2)',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            padding: '4px 12px',
+            borderRadius: '20px',
+            fontSize: '0.875rem',
+            fontWeight: '500',
+            color: 'white',
+            cursor: 'pointer',
+            outline: 'none'
+          }}
+        >
+          <option value="auto">📍 Auto</option>
+          <option value="new-york">🗽 New York</option>
+          <option value="san-francisco">🌉 San Francisco</option>
+          <option value="london">🇬🇧 London</option>
+          <option value="paris">🗼 Paris</option>
+          <option value="tokyo">🗾 Tokyo</option>
+          <option value="taipei">🏯 Taipei</option>
+        </select>
+      </div>
+    );
+  }
+
   return (
-    <div className="city-selector">
-      <label htmlFor="city-select">
-        <span className="city-icon">🌍</span>
-        Demo City:
-      </label>
+    <div className={compact ? "city-selector-compact" : "city-selector"}>
+      {!compact && (
+        <label htmlFor="city-select">
+          <span className="city-icon">🌍</span>
+          Demo City:
+        </label>
+      )}
       <select 
         id="city-select"
         value={selectedCity} 
         onChange={handleCityChange}
         disabled={loading}
-        className="city-select"
+        className={compact ? "city-select-compact" : "city-select"}
       >
         <option value="auto">
           📍 Auto-detect Location
