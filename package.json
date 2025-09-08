@@ -4,23 +4,14 @@
   "description": "A cross-platform parking space booking system with real-time navigation",
   "private": true,
   "scripts": {
-    "install:all": "npm run install:backend && npm run install:frontend",
-    "install:backend": "cd backend && npm install",
-    "install:frontend": "cd frontend && npm install",
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
-    "dev:backend": "cd backend && npm start",
-    "dev:frontend": "cd frontend && npm start",
-    "start": "npm run dev",
-    "build": "npm run build:frontend",
-    "build:frontend": "cd frontend && npm run build",
-    "clean": "npm run clean:backend && npm run clean:frontend",
-    "clean:backend": "cd backend && rm -rf node_modules package-lock.json",
-    "clean:frontend": "cd frontend && rm -rf node_modules package-lock.json build",
-    "test": "echo \"No tests configured yet\""
+    "dev:backend": "cd packages/backend && npm start",
+    "dev:frontend": "cd packages/frontend && npm start",
+    "build": "cd packages/frontend && npm run build",
+    "install:all": "cd packages/backend && npm install && cd ../frontend && npm install"
   },
   "workspaces": [
-    "backend",
-    "frontend"
+    "packages/*"
   ],
   "devDependencies": {
     "@craco/craco": "^7.1.0",
