@@ -6,7 +6,7 @@ A real-time parking space booking application with intelligent search and naviga
 
 ### Prerequisites
 - Node.js (v14 or higher)
-- npm
+- pnpm (v8 or higher)
 
 ### Installation
 
@@ -16,12 +16,17 @@ git clone https://github.com/gretapwcpan/parkwise.git
 cd parkwise
 ```
 
-2. Install dependencies:
+2. Install pnpm if you don't have it:
 ```bash
-npm run install:all
+npm install -g pnpm
 ```
 
-3. Set up environment variables:
+3. Install dependencies:
+```bash
+pnpm install
+```
+
+4. Set up environment variables:
 ```bash
 cp packages/backend/.env.example packages/backend/.env
 # Edit packages/backend/.env with your configuration
@@ -31,7 +36,7 @@ cp packages/backend/.env.example packages/backend/.env
 
 Start both backend and frontend:
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 The application will be available at:
@@ -41,7 +46,7 @@ The application will be available at:
 ### Building for Production
 
 ```bash
-npm run build
+pnpm run build
 ```
 
 ## Project Structure
@@ -71,39 +76,37 @@ parkwise/
 
 #### Backend Tests
 ```bash
+# Run from root directory
+pnpm --filter backend test
+
+# Or navigate to backend
 cd packages/backend
-
-# Install Jest globally (one-time setup)
-npm install -g jest
-
-# Run all tests
-jest
+pnpm test
 
 # Run specific test file
-jest tests/simple.test.js
+pnpm test tests/simple.test.js
 
 # Run with coverage
-jest --coverage
+pnpm test -- --coverage
 
 # Watch mode for development
-jest --watch
+pnpm test -- --watch
 ```
 
 #### Frontend Tests
 ```bash
+# Run from root directory
+pnpm --filter frontend test
+
+# Or navigate to frontend
 cd packages/frontend
-
-# Install test dependencies (if needed)
-npm install --save-dev @testing-library/react @testing-library/jest-dom @testing-library/user-event
-
-# Run tests in watch mode
-npm test
+pnpm test
 
 # Run tests once (CI mode)
-CI=true npm test --watchAll=false
+CI=true pnpm test -- --watchAll=false
 
 # Run with coverage
-npm test -- --coverage --watchAll=false
+pnpm test -- --coverage --watchAll=false
 ```
 
 #### Python LLM Service Tests
@@ -166,9 +169,22 @@ kill -9 <PID>
 If you encounter module errors, clean and reinstall:
 
 ```bash
-rm -rf packages/*/node_modules
-npm run install:all
+# Remove all node_modules
+rm -rf node_modules packages/*/node_modules
+
+# Clear cache and reinstall
+pnpm store prune
+pnpm install
 ```
+
+### Package Manager Notes
+
+This project uses **pnpm** for package management. Key commands:
+- `pnpm install` - Install all dependencies
+- `pnpm add <package>` - Add a new package
+- `pnpm --filter <workspace> add <package>` - Add package to specific workspace
+- `pnpm run <script>` - Run a script
+- `pnpm -r test` - Run tests in all packages
 
 ## License
 
