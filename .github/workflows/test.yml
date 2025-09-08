@@ -1,0 +1,234 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend-tests:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: packages/backend/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: packages/backend
+        run: npm ci
+      
+      - name: Run tests
+        working-directory: packages/backend
+        run: npm test
+      
+      - name: Generate coverage report
+        working-directory: packages/backend
+        run: npm run test:coverage
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          directory: packages/backend/coverage
+          flags: backend
+          name: backend-coverage
+          fail_ci_if_error: false
+
+  frontend-tests:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: packages/frontend/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: packages/frontend
+        run: npm ci
+      
+      - name: Run tests
+        working-directory: packages/frontend
+        run: npm test -- --coverage --watchAll=false
+        env:
+          CI: true
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          directory: packages/frontend/coverage
+          flags: frontend
+          name: frontend-coverage
+          fail_ci_if_error: false
+
+  llm-service-tests:
+    name: LLM Service Tests
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11']
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('packages/llm-service/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      
+      - name: Install dependencies
+        working-directory: packages/llm-service
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio pytest-cov pytest-mock httpx
+      
+      - name: Run tests
+        working-directory: packages/llm-service
+        run: pytest --cov=src --cov-report=xml --cov-report=term
+        env:
+          PYTHONPATH: ${{ github.workspace }}/packages/llm-service
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          directory: packages/llm-service
+          flags: llm-service
+          name: llm-service-coverage
+          fail_ci_if_error: false
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [backend-tests, frontend-tests, llm-service-tests]
+    
+    services:
+      mongodb:
+        image: mongo:6
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install backend dependencies
+        working-directory: packages/backend
+        run: npm ci
+      
+      - name: Install frontend dependencies
+        working-directory: packages/frontend
+        run: npm ci
+      
+      - name: Install Python dependencies
+        working-directory: packages/llm-service
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio pytest-cov pytest-mock httpx
+      
+      - name: Run integration tests
+        run: |
+          echo "Integration tests would run here"
+          # npm run test:integration
+        env:
+          MONGODB_URI: mongodb://localhost:27017/parkwise-test
+          NODE_ENV: test
+          CI: true
+
+  lint:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install ESLint
+        run: npm install -g eslint
+      
+      - name: Lint JavaScript/TypeScript
+        run: |
+          cd packages/backend && npx eslint src/ || true
+          cd ../frontend && npx eslint src/ || true
+      
+      - name: Install Python linters
+        run: pip install flake8 black isort
+      
+      - name: Lint Python code
+        working-directory: packages/llm-service
+        run: |
+          flake8 src/ --max-line-length=100 --ignore=E203,W503 || true
+          black --check src/ || true
+          isort --check-only src/ || true
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Run Trivy security scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+      
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'

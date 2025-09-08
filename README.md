@@ -65,6 +65,87 @@ parkwise/
 - 🎤 Voice assistant integration
 - 📱 Responsive design
 
+## Testing
+
+### Running Tests
+
+#### Backend Tests
+```bash
+cd packages/backend
+
+# Install Jest globally (one-time setup)
+npm install -g jest
+
+# Run all tests
+jest
+
+# Run specific test file
+jest tests/simple.test.js
+
+# Run with coverage
+jest --coverage
+
+# Watch mode for development
+jest --watch
+```
+
+#### Frontend Tests
+```bash
+cd packages/frontend
+
+# Install test dependencies (if needed)
+npm install --save-dev @testing-library/react @testing-library/jest-dom @testing-library/user-event
+
+# Run tests in watch mode
+npm test
+
+# Run tests once (CI mode)
+CI=true npm test --watchAll=false
+
+# Run with coverage
+npm test -- --coverage --watchAll=false
+```
+
+#### Python LLM Service Tests
+```bash
+cd packages/llm-service
+
+# Install test dependencies
+pip install pytest pytest-asyncio pytest-cov
+
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=src
+
+# Run specific test file
+pytest tests/unit/test_query_parser.py
+```
+
+### Test Structure
+
+```
+packages/
+├── backend/
+│   ├── jest.config.js           # Jest configuration
+│   └── tests/
+│       ├── setup.js             # Test setup and utilities
+│       ├── simple.test.js       # Basic tests (working example)
+│       └── unit/
+│           └── services/        # Service unit tests
+├── frontend/
+│   ├── src/
+│   │   ├── setupTests.js        # React test setup
+│   │   └── components/
+│   │       └── __tests__/       # Component tests
+└── llm-service/
+    ├── pytest.ini               # Pytest configuration
+    └── tests/
+        ├── conftest.py          # Shared fixtures
+        └── unit/                # Unit tests
+```
+
 ## Troubleshooting
 
 ### Port Already in Use
