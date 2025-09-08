@@ -97,7 +97,7 @@
 }
 
 .minimized-text {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -134,7 +134,7 @@
 }
 
 .statistics-panel .stat-label {
-  font-size: 11px;
+  font-size: 13px;
   color: #666;
   text-transform: uppercase;
   letter-spacing: 0.5px;

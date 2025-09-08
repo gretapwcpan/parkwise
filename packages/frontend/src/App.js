@@ -68,7 +68,7 @@ function App() {
   const [navigationDestination, setNavigationDestination] = useState(null);
   const [navigationRoute, setNavigationRoute] = useState(null);
   const [pinnedLocation, setPinnedLocation] = useState(null);
-  const [showLocationVibe, setShowLocationVibe] = useState(false);
+  const [showLocationVibe, setShowLocationVibe] = useState(true); // Always show the Location Vibe panel
   const [activeHashtags, setActiveHashtags] = useState([]);
   const [hashtagLocations, setHashtagLocations] = useState([]);
   const [selectedCity, setSelectedCity] = useState(null);
@@ -344,7 +344,7 @@ function App() {
             />
           )}
           
-          {showLocationVibe && pinnedLocation && (
+          {showLocationVibe && (
             <DraggablePanel
               title="✨ Location Vibe"
               className="location-intelligence-panel"

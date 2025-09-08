@@ -603,16 +603,6 @@ const MapView = ({ parkingSpots, onSpotSelect, selectedSpot, userId, userLocatio
         <div className="connection-status">
           {connected ? '🟢 Connected' : '🔴 Disconnected'}
         </div>
-        <div style={{
-          marginTop: '10px',
-          padding: '8px',
-          background: 'rgba(255, 255, 255, 0.9)',
-          borderRadius: '8px',
-          fontSize: '12px',
-          color: '#666'
-        }}>
-          💡 Tip: Right-click or double-click on the map to get location vibe
-        </div>
         {parkingSpots && parkingSpots.length > 0 && (
           <div className="parking-count">
             📍 {parkingSpots.length} spots within {searchRadius}m

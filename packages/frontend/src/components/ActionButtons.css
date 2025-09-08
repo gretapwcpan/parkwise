@@ -52,7 +52,7 @@
   /* Style */
   border: none;
   border-radius: 24px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: white;
   cursor: pointer;
@@ -279,7 +279,7 @@
   .voice-assistant-fab {
     width: 96px !important; /* 80% of 120px */
     height: 35px !important; /* 80% of 44px */
-    font-size: 11px !important; /* Scaled down */
+    font-size: 13px !important; /* Scaled down */
   }
   
   .action-btn .btn-icon,

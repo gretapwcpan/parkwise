@@ -51,16 +51,16 @@ const SurroundingInfo = ({ userLocation }) => {
   // Always render the panel, even without location data
   return (
     <DraggablePanel
-      title="📍 Current Location"
+      title="Surrounding info"
       className="location-panel"
-      defaultPosition={{ x: 20, y: 120 }}
+      defaultPosition={{ x: 14, y: 120 }}
       minWidth={320}
       startMinimized={true}  // Start minimized like other panels
       panelId="current-location"
     >
       <div className={`surrounding-info ${expanded ? 'expanded' : 'collapsed'}`}>
         <div className="surrounding-info-header" onClick={() => setExpanded(!expanded)}>
-          <h3>📍 Current Location</h3>
+          <h3>Surrounding Info</h3>
           <span className="toggle-icon">{expanded ? '▼' : '▶'}</span>
         </div>
         

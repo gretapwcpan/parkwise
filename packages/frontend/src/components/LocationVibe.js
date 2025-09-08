@@ -112,157 +112,190 @@ const LocationVibe = ({ location, onClose, onFindSimilar, onHashtagClick, onLoca
     }
   };
 
-  if (!location) return null;
-
   return (
     <div className="location-vibe-content">
-      {loading && (
-        <div className="loading">
-          <div className="spinner"></div>
-          <p>Analyzing location...</p>
+      {!location ? (
+        <div className="no-location-message" style={{
+          padding: '40px 20px',
+          textAlign: 'center',
+          color: '#666'
+        }}>
+          <div style={{
+            fontSize: '48px',
+            marginBottom: '16px',
+            opacity: '0.5'
+          }}>📍</div>
+          <h3 style={{
+            margin: '0 0 12px 0',
+            color: '#333',
+            fontSize: '18px'
+          }}>No Location Selected</h3>
+          <p style={{
+            margin: '0',
+            fontSize: '14px',
+            lineHeight: '1.5'
+          }}>
+            Double-click on the map to pin a location and analyze its vibe.
+          </p>
+          <p style={{
+            margin: '12px 0 0 0',
+            fontSize: '13px',
+            color: '#999'
+          }}>
+            Discover parking difficulty, local atmosphere, and find similar areas.
+          </p>
         </div>
-      )}
-
-      {error && (
-        <div className="error">
-          <p>⚠️ {error}</p>
-          <button onClick={analyzeLocation}>Retry</button>
-        </div>
-      )}
-
-      {vibeData && !loading && (
-        <div className="vibe-content">
-          {/* Vibe Score and Summary */}
-          <div className="vibe-summary">
-            <div className="vibe-score">
-              <span className="score-label">Vibe Score</span>
-              <span className="score-value">{vibeData.vibe?.score || 0}/10</span>
-            </div>
-            <p className="summary-text">{vibeData.vibe?.summary}</p>
-          </div>
-
-          {/* Hashtags */}
-          <div className="hashtags">
-            {vibeData.vibe?.hashtags?.map((tag, idx) => (
-              <span 
-                key={idx} 
-                className={`hashtag clickable ${activeHashtags.includes(tag) ? 'active' : ''}`}
-                onClick={() => handleHashtagClick(tag)}
-                title="Click to find similar locations"
-              >
-                {tag}
-              </span>
-            ))}
-            {vibeData.parking?.hashtags?.map((tag, idx) => (
-              <span 
-                key={`p-${idx}`} 
-                className={`hashtag parking-tag clickable ${activeHashtags.includes(tag) ? 'active' : ''}`}
-                onClick={() => handleHashtagClick(tag)}
-                title="Click to find similar locations"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-
-          {/* Similar Locations */}
-          {loadingSimilar && (
-            <div className="similar-loading">
-              <div className="spinner-small"></div>
-              <span>Finding similar locations...</span>
+      ) : (
+        <>
+          {loading && (
+            <div className="loading">
+              <div className="spinner"></div>
+              <p>Analyzing location...</p>
             </div>
           )}
-          
-          {!loadingSimilar && similarLocations.length > 0 && (
-            <div className="similar-locations">
-              <h4>📍 Similar Locations ({similarLocations.length})</h4>
-              <div className="similar-list">
-                {similarLocations.slice(0, 5).map((loc, idx) => (
-                  <div 
+
+          {error && (
+            <div className="error">
+              <p>⚠️ {error}</p>
+              <button onClick={analyzeLocation}>Retry</button>
+            </div>
+          )}
+
+          {vibeData && !loading && (
+            <div className="vibe-content">
+              {/* Vibe Score and Summary */}
+              <div className="vibe-summary">
+                <div className="vibe-score">
+                  <span className="score-label">Vibe Score</span>
+                  <span className="score-value">{vibeData.vibe?.score || 0}/10</span>
+                </div>
+                <p className="summary-text">{vibeData.vibe?.summary}</p>
+              </div>
+
+              {/* Hashtags */}
+              <div className="hashtags">
+                {vibeData.vibe?.hashtags?.map((tag, idx) => (
+                  <span 
                     key={idx} 
-                    className="similar-item clickable"
-                    onClick={() => {
-                      console.log('Clicked location:', loc);
-                      console.log('Location lat:', loc.lat, 'lng:', loc.lng);
-                      
-                      if (onLocationClick && loc.lat && loc.lng) {
-                        // Pass the location coordinates to navigate to
-                        const navLocation = {
-                          lat: loc.lat,
-                          lng: loc.lng,
-                          name: loc.name || loc.district || loc.area || `Location ${idx + 1}`
-                        };
-                        console.log('Navigating to:', navLocation);
-                        onLocationClick(navLocation);
-                      } else {
-                        console.error('Cannot navigate - missing coordinates or callback', {
-                          hasCallback: !!onLocationClick,
-                          lat: loc.lat,
-                          lng: loc.lng
-                        });
-                      }
-                    }}
-                    style={{ cursor: 'pointer' }}
-                    title="Click to navigate to this location"
+                    className={`hashtag clickable ${activeHashtags.includes(tag) ? 'active' : ''}`}
+                    onClick={() => handleHashtagClick(tag)}
+                    title="Click to find similar locations"
                   >
-                    <div className="similar-header">
-                      <div className="similar-name">
-                        {loc.name || loc.district || loc.area || `Location ${idx + 1}`}
+                    {tag}
+                  </span>
+                ))}
+                {vibeData.parking?.hashtags?.map((tag, idx) => (
+                  <span 
+                    key={`p-${idx}`} 
+                    className={`hashtag parking-tag clickable ${activeHashtags.includes(tag) ? 'active' : ''}`}
+                    onClick={() => handleHashtagClick(tag)}
+                    title="Click to find similar locations"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+
+              {/* Similar Locations */}
+              {loadingSimilar && (
+                <div className="similar-loading">
+                  <div className="spinner-small"></div>
+                  <span>Finding similar locations...</span>
+                </div>
+              )}
+              
+              {!loadingSimilar && similarLocations.length > 0 && (
+                <div className="similar-locations">
+                  <h4>📍 Similar Locations ({similarLocations.length})</h4>
+                  <div className="similar-list">
+                    {similarLocations.slice(0, 5).map((loc, idx) => (
+                      <div 
+                        key={idx} 
+                        className="similar-item clickable"
+                        onClick={() => {
+                          console.log('Clicked location:', loc);
+                          console.log('Location lat:', loc.lat, 'lng:', loc.lng);
+                          
+                          if (onLocationClick && loc.lat && loc.lng) {
+                            // Pass the location coordinates to navigate to
+                            const navLocation = {
+                              lat: loc.lat,
+                              lng: loc.lng,
+                              name: loc.name || loc.district || loc.area || `Location ${idx + 1}`
+                            };
+                            console.log('Navigating to:', navLocation);
+                            onLocationClick(navLocation);
+                          } else {
+                            console.error('Cannot navigate - missing coordinates or callback', {
+                              hasCallback: !!onLocationClick,
+                              lat: loc.lat,
+                              lng: loc.lng
+                            });
+                          }
+                        }}
+                        style={{ cursor: 'pointer' }}
+                        title="Click to navigate to this location"
+                      >
+                        <div className="similar-header">
+                          <div className="similar-name">
+                            {loc.name || loc.district || loc.area || `Location ${idx + 1}`}
+                          </div>
+                          <div className="similar-score">
+                            {loc.matchCount ? `${loc.matchCount} matches` : `Score: ${loc.score}/10`}
+                          </div>
+                        </div>
+                        <div className="similar-tags">
+                          {Array.isArray(loc.matchingTags) 
+                            ? loc.matchingTags.slice(0, 3).join(', ')
+                            : (loc.hashtags ? loc.hashtags.slice(0, 3).join(', ') : '')}
+                        </div>
+                        {loc.distance && (
+                          <div className="similar-distance">
+                            {loc.distance.toFixed(1)} km away
+                          </div>
+                        )}
                       </div>
-                      <div className="similar-score">
-                        {loc.matchCount ? `${loc.matchCount} matches` : `Score: ${loc.score}/10`}
-                      </div>
-                    </div>
-                    <div className="similar-tags">
-                      {Array.isArray(loc.matchingTags) 
-                        ? loc.matchingTags.slice(0, 3).join(', ')
-                        : (loc.hashtags ? loc.hashtags.slice(0, 3).join(', ') : '')}
-                    </div>
-                    {loc.distance && (
-                      <div className="similar-distance">
-                        {loc.distance.toFixed(1)} km away
-                      </div>
-                    )}
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Parking Analysis */}
+              <div className="parking-analysis">
+                <h4>🚗 Parking Analysis</h4>
+                <div className="difficulty-meter">
+                  <span className="label">Difficulty:</span>
+                  <span className="meter">{getParkingDifficultyBar(vibeData.parking?.difficulty || 0)}</span>
+                  <span className="level">{vibeData.parking?.level}</span>
+                </div>
+                <ul className="parking-tips">
+                  {vibeData.parking?.tips?.map((tip, idx) => (
+                    <li key={idx}>{tip}</li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Transport Recommendations */}
+              <div className="transport-recommendations">
+                <h4>🚇 Best Way to Get There</h4>
+                {vibeData.transport?.map((rec, idx) => (
+                  <div key={idx} className="transport-option">
+                    <strong>{rec.method}:</strong> {rec.reason}
                   </div>
                 ))}
               </div>
+
+              {/* Find Similar Button */}
+              <button 
+                className="find-similar-btn"
+                onClick={handleFindSimilarClick}
+                disabled={loadingSimilar}
+              >
+                {loadingSimilar ? '🔄 Searching...' : '🔍 Find All Similar Vibes'}
+              </button>
             </div>
           )}
-
-          {/* Parking Analysis */}
-          <div className="parking-analysis">
-            <h4>🚗 Parking Analysis</h4>
-            <div className="difficulty-meter">
-              <span className="label">Difficulty:</span>
-              <span className="meter">{getParkingDifficultyBar(vibeData.parking?.difficulty || 0)}</span>
-              <span className="level">{vibeData.parking?.level}</span>
-            </div>
-            <ul className="parking-tips">
-              {vibeData.parking?.tips?.map((tip, idx) => (
-                <li key={idx}>{tip}</li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Transport Recommendations */}
-          <div className="transport-recommendations">
-            <h4>🚇 Best Way to Get There</h4>
-            {vibeData.transport?.map((rec, idx) => (
-              <div key={idx} className="transport-option">
-                <strong>{rec.method}:</strong> {rec.reason}
-              </div>
-            ))}
-          </div>
-
-          {/* Find Similar Button */}
-          <button 
-            className="find-similar-btn"
-            onClick={handleFindSimilarClick}
-            disabled={loadingSimilar}
-          >
-            {loadingSimilar ? '🔄 Searching...' : '🔍 Find All Similar Vibes'}
-          </button>
-        </div>
+        </>
       )}
     </div>
   );

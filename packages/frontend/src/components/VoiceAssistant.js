@@ -7,7 +7,7 @@ const VoiceAssistant = () => {
   const [transcript, setTranscript] = useState('');
   const [response, setResponse] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [position, setPosition] = useState({ x: window.innerWidth - 370, y: window.innerHeight - 400 });
+  const [position, setPosition] = useState({ x: window.innerWidth - 370 , y: window.innerHeight - 400 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isDraggingFab, setIsDraggingFab] = useState(false);
@@ -27,8 +27,8 @@ const VoiceAssistant = () => {
     // Set initial position to bottom-right corner, accounting for other stacked icons
     // Position it at the top of the stack (4 panels below it)
     setPosition({
-      x: window.innerWidth - 160, // Match DraggablePanel positioning
-      y: window.innerHeight - 320 // Top of the stack (4 panels * 60px spacing + margin)
+      x: window.innerWidth - 130, // Match DraggablePanel positioning
+      y: window.innerHeight - 240 // Top of the stack (4 panels * 60px spacing + margin)
     });
   }, []);
   
