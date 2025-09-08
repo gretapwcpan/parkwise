@@ -103,7 +103,7 @@ npm start
 
 # Terminal 2: LLM Service
 cd llm-service
-python app_simple.py
+python app.py
 ```
 
 ### 4. Restart Claude Desktop
