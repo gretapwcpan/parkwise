@@ -1,9 +1,8 @@
 """
 Unified LLM Service for Parkwise
-Supports three scenarios:
-1. OpenAI-compatible API (cloud or local endpoints)
+Supports two scenarios:
+1. OpenAI-compatible API (cloud or local endpoints including Ollama)
 2. vLLM with GPU (OpenAI GPT-OSS 20B)
-3. llama.cpp with CPU
 """
 
 import os
@@ -28,7 +27,7 @@ logger = logging.getLogger(__name__)
 # Initialize FastAPI app
 app = FastAPI(
     title="Parkwise Unified LLM Service",
-    description="Supports API, vLLM (GPU), and llama.cpp (CPU) modes",
+    description="Supports API and vLLM (GPU) modes",
     version="2.0.0"
 )
 
@@ -133,7 +132,7 @@ def detect_and_initialize_llm():
     mode = os.getenv("LLM_MODE", "auto").lower()
     
     if mode == "api" or (mode == "auto" and os.getenv("API_BASE_URL")):
-        # Scenario 1: OpenAI-compatible API
+        # Scenario 1: OpenAI-compatible API (including Ollama)
         try:
             from llm_providers.api_provider import OpenAICompatibleProvider
             llm_provider = OpenAICompatibleProvider()
@@ -158,19 +157,6 @@ def detect_and_initialize_llm():
         except Exception as e:
             logger.error(f"Failed to initialize vLLM provider: {e}")
             if mode == "vllm":
-                raise
-    
-    if mode == "llamacpp" or mode == "auto":
-        # Scenario 3: llama.cpp with CPU
-        try:
-            from llm_providers.llamacpp_provider import LlamaCppProvider
-            llm_provider = LlamaCppProvider()
-            current_mode = "llamacpp"
-            logger.info(f"✓ Initialized llama.cpp mode")
-            return
-        except Exception as e:
-            logger.error(f"Failed to initialize llama.cpp provider: {e}")
-            if mode == "llamacpp":
                 raise
     
     # If we get here, no provider could be initialized
@@ -206,9 +192,8 @@ async def root():
         "status": "ready" if llm_provider else "no_provider",
         "endpoints": ["/api/search", "/api/vibe/analyze", "/health", "/config"],
         "modes": {
-            "api": "OpenAI-compatible API (cloud or local)",
-            "vllm": "vLLM with GPU (OpenAI GPT-OSS 20B)",
-            "llamacpp": "llama.cpp with CPU"
+            "api": "OpenAI-compatible API (cloud or local including Ollama)",
+            "vllm": "vLLM with GPU (OpenAI GPT-OSS 20B)"
         }
     }
 
@@ -229,11 +214,6 @@ async def get_config():
         config["vllm"] = {
             "model": os.getenv("VLLM_MODEL", "openai/gpt-oss-20b"),
             "gpu_memory": os.getenv("VLLM_GPU_MEMORY", "0.9")
-        }
-    elif current_mode == "llamacpp":
-        config["llamacpp"] = {
-            "model": os.getenv("LLAMACPP_MODEL_PATH"),
-            "threads": os.getenv("LLAMACPP_THREADS", "8")
         }
     
     return config

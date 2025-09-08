@@ -5,7 +5,7 @@ python-dotenv==1.0.0
 pydantic==2.5.3
 requests==2.32.3
 
-# OpenAI-compatible API mode
+# OpenAI-compatible API mode (includes Ollama support)
 openai>=1.0.0
 
 # vLLM mode (GPU)
@@ -13,9 +13,6 @@ vllm==0.5.0
 torch>=2.0.0
 transformers>=4.40.0
 accelerate>=0.27.0
-
-# llama.cpp mode (CPU)
-llama-cpp-python==0.2.0
 
 # Optional but recommended
 numpy>=1.24.0

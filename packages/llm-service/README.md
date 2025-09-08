@@ -1,10 +1,9 @@
 # Parkwise Unified LLM Service
 
-A flexible LLM service that supports three deployment scenarios:
+A flexible LLM service that supports two deployment scenarios:
 
-1. **API Mode** - Use any OpenAI-compatible API (cloud or local)
+1. **API Mode** - Use any OpenAI-compatible API (cloud or local including Ollama)
 2. **vLLM Mode** - Local GPU inference with OpenAI GPT-OSS 20B
-3. **llama.cpp Mode** - Local CPU inference for systems without GPU
 
 ## Quick Start
 
@@ -16,9 +15,6 @@ pip install -r requirements.txt
 
 # For vLLM (GPU):
 pip install vllm torch transformers accelerate
-
-# For llama.cpp (CPU):
-pip install llama-cpp-python
 ```
 
 ### 2. Configure Environment
@@ -73,31 +69,6 @@ VLLM_GPU_MEMORY=0.9
 - NVIDIA GPU with 40GB+ VRAM for GPT-OSS 20B
 - CUDA 11.8+ and PyTorch 2.0+
 - Falls back to Mistral-7B if GPT-OSS unavailable
-
-### Scenario 3: llama.cpp with CPU
-
-For systems without GPU:
-
-```env
-LLM_MODE=llamacpp
-LLAMACPP_MODEL_PATH=models/mistral-7b-instruct-v0.2.Q4_K_M.gguf
-LLAMACPP_THREADS=8
-```
-
-**Download Models:**
-```python
-# Download recommended GGUF models
-from llm_providers.llamacpp_provider import LlamaCppProvider
-
-# Download Mistral 7B (recommended)
-model_path = LlamaCppProvider.download_model("mistral-7b")
-
-# Or Phi-3 (smaller, faster)
-model_path = LlamaCppProvider.download_model("phi-3")
-
-# Or TinyLlama (tiny, very fast)
-model_path = LlamaCppProvider.download_model("tinyllama")
-```
 
 ## API Endpoints
 
@@ -156,7 +127,6 @@ When `LLM_MODE=auto` (default), the service detects in this order:
 
 1. **API Mode** - If `API_BASE_URL` is configured
 2. **vLLM Mode** - If GPU is available
-3. **llama.cpp Mode** - Fallback for CPU-only systems
 
 ## Performance Comparison
 
@@ -164,7 +134,7 @@ When `LLM_MODE=auto` (default), the service detects in this order:
 |------|-------|-------|------|--------------|
 | **API** | GPT-4 | ⚡⚡⚡ | $$$ | API Key |
 | **vLLM** | GPT-OSS 20B | ⚡⚡ | Free | 40GB+ VRAM |
-| **llama.cpp** | Mistral 7B Q4 | ⚡ | Free | 8GB RAM |
+| **Ollama** | Mistral 7B | ⚡⚡ | Free | 8GB RAM |
 
 ## Testing
 
@@ -191,11 +161,16 @@ python app.py
 curl http://localhost:8001/config
 ```
 
-### Test llama.cpp Mode
+### Test Ollama Mode
 ```bash
+# First, start Ollama with a model
+ollama run mistral
+
 # Set in .env
-LLM_MODE=llamacpp
-LLAMACPP_MODEL_PATH=models/mistral-7b.gguf
+LLM_MODE=api
+API_BASE_URL=http://localhost:11434/v1
+API_KEY=dummy
+API_MODEL=mistral
 
 # Start and test
 python app.py
@@ -216,10 +191,10 @@ curl -X POST http://localhost:8001/api/search \
 - Verify GPU memory: `nvidia-smi`
 - Try smaller model if OOM
 
-### llama.cpp Mode Issues
-- Ensure model file exists in specified path
-- Check CPU threads setting
-- Try smaller quantized models
+### Ollama Mode Issues
+- Ensure Ollama is running: `ollama list`
+- Check model is downloaded: `ollama pull mistral`
+- Verify endpoint is accessible: `curl http://localhost:11434/api/tags`
 
 ## Docker Deployment
 
@@ -234,9 +209,6 @@ RUN pip install -r requirements.txt
 
 # For vLLM (GPU)
 # RUN pip install vllm torch transformers
-
-# For llama.cpp (CPU)
-# RUN pip install llama-cpp-python
 
 COPY . .
 
@@ -260,13 +232,6 @@ CMD ["python", "app.py"]
 - `VLLM_TEMPERATURE` - Generation temperature
 - `VLLM_MAX_TOKENS` - Maximum tokens to generate
 
-### llama.cpp Mode
-- `LLAMACPP_MODEL_PATH` - Path to GGUF model file
-- `LLAMACPP_THREADS` - Number of CPU threads
-- `LLAMACPP_CONTEXT_SIZE` - Context window size
-- `LLAMACPP_BATCH_SIZE` - Batch size for processing
-- `LLAMACPP_TEMPERATURE` - Generation temperature
-- `LLAMACPP_MAX_TOKENS` - Maximum tokens to generate
 
 ## License
 
