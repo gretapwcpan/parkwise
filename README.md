@@ -58,6 +58,7 @@ parkwise/
 │   ├── frontend/         # React application
 │   ├── llm-service/      # Python LLM service (optional)
 │   └── mcp-server/       # MCP tools server (optional)
+├── vllm-deployment/      # Local vLLM setup for testing
 └── docs/                 # Additional documentation
 ```
 
@@ -69,6 +70,127 @@ parkwise/
 - 🚗 Turn-by-turn navigation
 - 🎤 Voice assistant integration
 - 📱 Responsive design
+- 🤖 Multiple LLM provider support (OpenAI, Ollama, vLLM)
+
+## LLM Provider Setup (Optional)
+
+ParkWise supports multiple LLM providers for intelligent search and recommendations. Choose the one that best fits your needs:
+
+### Option 1: OpenAI API (Cloud)
+Simple cloud-based solution, no local setup required:
+```bash
+# In packages/llm-service/.env
+LLM_MODE=api
+API_BASE_URL=https://api.openai.com/v1
+API_KEY=your-openai-api-key
+API_MODEL=gpt-3.5-turbo
+```
+
+### Option 2: Ollama (Local, CPU-friendly)
+Good for local development without GPU:
+```bash
+# Install Ollama
+curl -fsSL https://ollama.ai/install.sh | sh
+
+# Pull a model
+ollama pull mistral
+
+# Configure llm-service
+# In packages/llm-service/.env
+LLM_MODE=api
+API_BASE_URL=http://localhost:11434/v1
+API_MODEL=mistral
+```
+
+### Option 3: vLLM (Local, GPU-optimized)
+
+Best performance for local testing with GPU. Supports OpenAI GPT-OSS models.
+
+#### Quick Setup
+
+1. **Install vLLM**:
+```bash
+cd vllm-deployment
+pip install -r requirements.txt
+```
+
+2. **Start vLLM server** (runs on port 8002):
+```bash
+./start.sh
+# Server will be available at http://localhost:8002
+```
+
+3. **Configure LLM service** to use vLLM:
+```bash
+# In packages/llm-service/.env
+LLM_MODE=api
+API_BASE_URL=http://localhost:8002/v1
+API_MODEL=openai/gpt-oss-20b
+API_KEY=dummy-key
+```
+
+4. **Start the LLM service** (runs on port 8001):
+```bash
+cd packages/llm-service
+python app.py
+```
+
+5. **Verify the connection**:
+```bash
+# Test vLLM directly
+cd vllm-deployment
+python test.py
+
+# Test through LLM service
+curl http://localhost:8001/health
+```
+
+#### Service Architecture
+
+```
+┌─────────────┐     ┌─────────────┐     ┌──────────────┐     ┌─────────────┐
+│   Frontend  │────▶│   Backend   │────▶│  LLM Service │────▶│    vLLM     │
+│   (3000)    │     │   (3001)    │     │    (8001)    │     │   (8002)    │
+└─────────────┘     └─────────────┘     └──────────────┘     └─────────────┘
+```
+
+#### Supported Models
+
+- **openai/gpt-oss-20b** - Smaller model, ~16GB VRAM
+- **mistralai/Mistral-7B-Instruct-v0.2** - For limited VRAM
+
+For more details, see [vllm-deployment/README.md](vllm-deployment/README.md).
+
+### Comparison of LLM Providers
+
+| Provider | Cost | Setup | Performance | Best For |
+|----------|------|-------|-------------|----------|
+| OpenAI API | Pay-per-use | Easy | Fast (cloud) | Production |
+| Ollama | Free | Easy | Moderate (CPU) | Development |
+| vLLM | Free | Moderate | Fast (GPU) | Testing with GPU |
+
+### Complete System Startup
+
+To run the entire system with vLLM:
+
+```bash
+# Terminal 1: Start vLLM
+cd vllm-deployment
+./start.sh
+
+# Terminal 2: Start LLM service
+cd packages/llm-service
+python app.py
+
+# Terminal 3: Start backend and frontend
+pnpm run dev
+```
+
+The services will be available at:
+- **Frontend**: http://localhost:3000
+- **Backend**: http://localhost:3001
+- **LLM Service**: http://localhost:8001
+- **vLLM API**: http://localhost:8002
 
 ## Testing
 

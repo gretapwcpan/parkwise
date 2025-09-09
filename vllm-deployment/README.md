@@ -1,185 +1,181 @@
-# vLLM Deployment on AWS EC2
+# vLLM Local Deployment
 
-This is a standalone vLLM deployment for serving large language models (like openai/gpt-oss-20b) on AWS EC2 with GPU support.
+Simple local deployment of vLLM for testing OpenAI GPT-OSS models and other LLMs.
 
-## Architecture
-
-- **Single EC2 instance** with 8x A100 GPUs (p4d.24xlarge)
-- **vLLM server** with tensor parallelism across all GPUs
-- **OpenAI-compatible API** endpoint
-- **Auto-shutdown** to save costs when idle
-- **CloudWatch monitoring** for GPU/CPU metrics
-
-## Prerequisites
-
-1. **AWS Account** with GPU instance quota
-2. **AWS CLI** configured with credentials
-3. **Terraform** installed (v1.0+)
-4. **SSH Key Pair** created in AWS EC2
+Based on the [OpenAI Cookbook guide](https://cookbook.openai.com/articles/gpt-oss/run-vllm).
 
 ## Quick Start
 
-### 1. Configure Terraform
+### 1. Install vLLM
 
 ```bash
-cd vllm-deployment
-cp terraform.tfvars.example terraform.tfvars
-# Edit terraform.tfvars with your settings
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Or just install vLLM directly
+pip install vllm
 ```
 
-Key settings to update:
-- `key_pair_name`: Your AWS SSH key pair name
-- `allowed_ips`: Restrict to your IP address for security
-- `hf_token`: If using a private HuggingFace model
-
-### 2. Deploy Infrastructure
+### 2. Start the Server
 
 ```bash
-terraform init
-terraform plan
-terraform apply
+# Make scripts executable
+chmod +x start.sh stop.sh
+
+# Start vLLM server
+./start.sh
 ```
 
-This will create:
-- EC2 instance with GPUs
-- Security groups
-- Elastic IP for stable endpoint
-- CloudWatch logging
-- Auto-start vLLM service
+The server will start on `http://localhost:8002` by default.
 
-### 3. Wait for Setup
+### 3. Test the Server
 
-The instance takes ~10-15 minutes to:
-- Download and install vLLM
-- Download the model (can take longer for 20b models)
-- Start the service
-
-Monitor progress:
 ```bash
-# Get SSH command from Terraform output
-terraform output ssh_command
-
-# SSH into instance and check logs
-ssh -i your-key.pem ubuntu@<PUBLIC_IP>
-sudo journalctl -u vllm -f
+# Run the test script
+python test.py
 ```
 
-### 4. Test the API
+### 4. Stop the Server
 
-Once running, test with:
 ```bash
-# Get test command from Terraform output
-terraform output test_curl_command
-
-# Or manually:
-curl -X POST "http://<PUBLIC_IP>:8000/v1/chat/completions" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "openai/gpt-oss-20b",
-    "messages": [
-      {"role": "user", "content": "Hello!"}
-    ]
-  }'
+./stop.sh
 ```
+
+## Configuration
+
+Copy `.env.example` to `.env` and customize:
+
+```bash
+cp .env.example .env
+```
+
+Available options:
+- `VLLM_MODEL`: Model to serve (default: `openai/gpt-oss-20b`)
+- `VLLM_PORT`: Port to run on (default: `8002`)
+- `VLLM_HOST`: Host to bind to (default: `0.0.0.0`)
+
+## Model Options
+
+### OpenAI GPT-OSS Models
+- **`openai/gpt-oss-20b`** - Smaller model, requires ~16GB VRAM
+- **`openai/gpt-oss-120b`** - Larger model, requires ~60GB VRAM
+
+Both models are MXFP4 quantized for efficiency.
+
+### Alternative Models (Less VRAM)
+If you have limited GPU memory, try:
+- `mistralai/Mistral-7B-Instruct-v0.2` - 7B parameters
+- `meta-llama/Llama-2-7b-chat-hf` - 7B parameters (requires HF token)
 
 ## Integration with Your App
 
-In your main application's `.env`:
+### Using with packages/llm-service
+
+Update your `.env` in the main project:
+
 ```env
+# Use vLLM as the LLM provider
 LLM_API_TYPE=openai-compatible
-LLM_API_BASE_URL=http://<PUBLIC_IP>:8000/v1
+LLM_API_BASE_URL=http://localhost:8002/v1
 LLM_API_KEY=dummy-key
 LLM_MODEL=openai/gpt-oss-20b
 ```
 
-## Cost Management
+### Direct API Usage
 
-### Auto-Shutdown
-The instance automatically shuts down after 2 hours of inactivity (configurable).
+```python
+from openai import OpenAI
 
-### Manual Stop/Start
-```bash
-# Stop instance (save costs when not using)
-terraform output stop_instance_command | bash
+client = OpenAI(
+    base_url="http://localhost:8002/v1",
+    api_key="EMPTY"
+)
 
-# Start instance when needed
-terraform output start_instance_command | bash
+response = client.chat.completions.create(
+    model="openai/gpt-oss-20b",
+    messages=[
+        {"role": "user", "content": "Hello!"}
+    ]
+)
+
+print(response.choices[0].message.content)
 ```
 
-### Instance Costs
-- **p4d.24xlarge**: ~$32/hour (8x A100 40GB)
-- **p4de.24xlarge**: ~$40/hour (8x A100 80GB) - for larger models
-- **g5.48xlarge**: ~$16/hour (8x A10G) - cheaper but less powerful
+### cURL Example
 
-## Monitoring
-
-### CloudWatch Metrics
-- GPU utilization
-- GPU memory usage
-- CPU and RAM usage
-- vLLM logs
-
-### View Logs
 ```bash
-# Via SSH
-terraform output logs_command | bash
-
-# Via AWS Console
-# Go to CloudWatch > Log Groups > /aws/ec2/vllm-server
+curl http://localhost:8002/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/gpt-oss-20b",
+    "messages": [{"role": "user", "content": "Hello!"}]
+  }'
 ```
+
+## System Requirements
+
+### For GPT-OSS-20B
+- **GPU**: NVIDIA GPU with 16GB+ VRAM
+- **RAM**: 32GB recommended
+- **Disk**: 50GB free space for model download
+
+### For GPT-OSS-120B
+- **GPU**: NVIDIA GPU with 60GB+ VRAM (or multi-GPU setup)
+- **RAM**: 64GB+ recommended
+- **Disk**: 250GB free space for model download
+
+### CPU-Only Mode
+For testing without GPU, use smaller models like Mistral-7B, though performance will be significantly slower.
 
 ## Troubleshooting
 
-### Model Not Found
-If you get "model not found" errors:
-1. Check if the model exists on HuggingFace
-2. Verify HF_TOKEN if it's a private model
-3. Check available disk space (20b models need ~250GB)
+### "CUDA out of memory"
+- Try a smaller model (e.g., Mistral-7B instead of GPT-OSS-20B)
+- Reduce `MAX_MODEL_LEN` in your `.env`
+- Lower `GPU_MEMORY_UTILIZATION` (e.g., to 0.8)
 
-### Out of Memory
-For 20b models, you may need:
-- Use `p4de.24xlarge` (80GB GPUs) instead of `p4d.24xlarge`
-- Reduce `max_model_len` in terraform.tfvars
-- Adjust `gpu-memory-utilization` in user_data.sh
+### "Model not found"
+- Check your internet connection (models download on first run)
+- For private models, set `HF_TOKEN` in `.env`
+- Verify the model name is correct
 
-### Connection Refused
-1. Check security group allows your IP
-2. Verify vLLM service is running: `sudo systemctl status vllm`
-3. Check instance is running: `aws ec2 describe-instances`
+### "Connection refused"
+- Ensure the server is running: `ps aux | grep vllm`
+- Check the port isn't already in use: `lsof -i :8002`
+- Review logs: `./start.sh` shows real-time logs
 
-## Customization
+### Slow Performance
+- Ensure you're using a GPU: `nvidia-smi`
+- Check GPU utilization during inference
+- Consider using a smaller model for testing
 
-### Different Models
-Edit `terraform.tfvars`:
-```hcl
-model_name = "meta-llama/Llama-2-70b-chat-hf"
-tensor_parallel_size = 4  # Adjust based on model size
-```
+## Docker Alternative (Optional)
 
-### Performance Tuning
-Edit `terraform/user_data.sh` vLLM parameters:
-- `--max-num-seqs`: Concurrent requests
-- `--gpu-memory-utilization`: GPU memory usage (0.95 = 95%)
-- `--enable-prefix-caching`: Cache common prefixes
+If you prefer Docker:
 
-## Cleanup
-
-To destroy all resources:
 ```bash
-terraform destroy
+docker run --gpus all -p 8002:8000 \
+  vllm/vllm-openai:latest \
+  --model openai/gpt-oss-20b \
+  --trust-remote-code
 ```
 
-## Security Notes
+## Comparison with Cloud Deployment
 
-1. **Restrict IP access**: Update `allowed_ips` in terraform.tfvars
-2. **Use API keys**: Set `api_key` in terraform.tfvars
-3. **Enable HTTPS**: Add an Application Load Balancer with SSL
-4. **Private subnet**: Deploy in private subnet with NAT gateway
+| Aspect | Local (This Setup) | Cloud (Previous Terraform) |
+|--------|-------------------|---------------------------|
+| **Cost** | Free (uses your hardware) | ~$32/hour for AWS p4d |
+| **Setup Time** | ~5 minutes | ~15-20 minutes |
+| **Complexity** | Simple (pip install) | Complex (AWS, Terraform) |
+| **Scalability** | Limited to your hardware | Easy to scale |
+| **Best For** | Development, testing | Production, high load |
 
-## Support
+## Resources
 
-For issues:
-1. Check vLLM logs: `sudo journalctl -u vllm -f`
-2. Check user-data logs: `sudo cat /var/log/user-data.log`
-3. Verify GPU availability: `nvidia-smi`
-4. Test vLLM locally: `vllm serve --help`
+- [vLLM Documentation](https://docs.vllm.ai/)
+- [OpenAI Cookbook - GPT-OSS Guide](https://cookbook.openai.com/articles/gpt-oss/run-vllm)
+- [OpenAI GPT-OSS Models](https://huggingface.co/openai)
+
+## License
+
+This deployment setup is provided as-is for development and testing purposes.

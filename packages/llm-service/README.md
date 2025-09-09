@@ -50,7 +50,7 @@ API_MODEL=gpt-4-turbo
 - OpenAI: `https://api.openai.com/v1`
 - Azure: `https://your-resource.openai.azure.com/...`
 - Local vLLM: `http://localhost:8080/v1`
-- Ollama: `http://localhost:11434/v1`
+- Ollama: `http://localhost:11434/v1` (including GPT-OSS 20B with setup)
 - Together AI: `https://api.together.xyz/v1`
 - Any OpenAI-compatible endpoint
 
@@ -133,8 +133,11 @@ When `LLM_MODE=auto` (default), the service detects in this order:
 | Mode | Model | Speed | Cost | Requirements |
 |------|-------|-------|------|--------------|
 | **API** | GPT-4 | ⚡⚡⚡ | $$$ | API Key |
-| **vLLM** | GPT-OSS 20B | ⚡⚡ | Free | 40GB+ VRAM |
+| **vLLM** | GPT-OSS 20B | ⚡⚡⚡ | Free | 40GB+ VRAM |
 | **Ollama** | Mistral 7B | ⚡⚡ | Free | 8GB RAM |
+| **Ollama** | GPT-OSS 20B* | ⚡ | Free | 48GB+ RAM/VRAM |
+
+*GPT-OSS 20B on Ollama requires special setup and runs slower than vLLM. See [Ollama GPT-OSS Setup Guide](../../docs/setup/OLLAMA_GPT_OSS_SETUP.md).
 
 ## Testing
 
@@ -164,13 +167,15 @@ curl http://localhost:8001/config
 ### Test Ollama Mode
 ```bash
 # First, start Ollama with a model
-ollama run mistral
+ollama run mistral  # For lightweight setup
+# OR
+ollama run gpt-oss-20b  # For GPT-OSS (requires setup - see docs)
 
 # Set in .env
 LLM_MODE=api
 API_BASE_URL=http://localhost:11434/v1
 API_KEY=dummy
-API_MODEL=mistral
+API_MODEL=mistral  # or gpt-oss-20b
 
 # Start and test
 python app.py
