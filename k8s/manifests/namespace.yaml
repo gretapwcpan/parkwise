@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: parkwise
+  labels:
+    name: parkwise
+    app.kubernetes.io/name: parkwise
+    app.kubernetes.io/part-of: parkwise

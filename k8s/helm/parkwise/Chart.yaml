@@ -1,0 +1,17 @@
+apiVersion: v2
+name: parkwise
+description: A Helm chart for ParkWise - AI-powered parking system
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - parking
+  - booking
+  - ai
+  - real-time
+home: https://github.com/gretapwcpan/parkwise
+sources:
+  - https://github.com/gretapwcpan/parkwise
+maintainers:
+  - name: ParkWise Team
+    email: team@parkwise.com

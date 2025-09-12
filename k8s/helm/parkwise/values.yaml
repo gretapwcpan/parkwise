@@ -1,0 +1,162 @@
+# Default values for parkwise
+# This is a YAML-formatted file.
+
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+
+# Application configuration
+nameOverride: ""
+fullnameOverride: ""
+
+# Frontend configuration
+frontend:
+  enabled: true
+  image:
+    repository: parkwise/frontend
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  replicaCount: 2
+  service:
+    type: ClusterIP
+    port: 80
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+  env:
+    REACT_APP_API_URL: "http://parkwise-backend:3001"
+
+# Backend configuration
+backend:
+  enabled: true
+  image:
+    repository: parkwise/backend
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  replicaCount: 3
+  service:
+    type: ClusterIP
+    port: 3001
+  resources:
+    limits:
+      cpu: 200m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  env:
+    NODE_ENV: "production"
+    PORT: "3001"
+    LLM_SERVICE_URL: "http://parkwise-llm-service:8001"
+
+# LLM Service configuration
+llmService:
+  enabled: true
+  image:
+    repository: parkwise/llm-service
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 8001
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+  env:
+    PORT: "8001"
+    HOST: "0.0.0.0"
+    LOG_LEVEL: "INFO"
+
+# MCP Server configuration
+mcpServer:
+  enabled: true
+  image:
+    repository: parkwise/mcp-server
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  replicaCount: 2
+  service:
+    type: ClusterIP
+    port: 3002
+  resources:
+    limits:
+      cpu: 100m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+  env:
+    NODE_ENV: "production"
+    PORT: "3002"
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: parkwise.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service: frontend
+    - host: api.parkwise.example.com
+      paths:
+        - path: /api
+          pathType: Prefix
+          service: backend
+        - path: /llm
+          pathType: Prefix
+          service: llmService
+        - path: /mcp
+          pathType: Prefix
+          service: mcpServer
+  tls:
+    - secretName: parkwise-tls
+      hosts:
+        - parkwise.example.com
+        - api.parkwise.example.com
+
+# Service Account
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+# Pod Security Context
+podSecurityContext:
+  fsGroup: 2000
+
+# Security Context
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 1000
+
+# Node selection
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Autoscaling
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80

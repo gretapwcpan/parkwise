@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: parkwise-config
+  namespace: parkwise
+  labels:
+    app: parkwise
+data:
+  # Application configuration
+  NODE_ENV: "production"
+  LOG_LEVEL: "INFO"
+  
+  # Service URLs (internal cluster communication)
+  BACKEND_URL: "http://parkwise-backend:3001"
+  LLM_SERVICE_URL: "http://parkwise-llm-service:8001"
+  MCP_SERVICE_URL: "http://parkwise-mcp-server:3002"
+  
+  # CORS settings
+  ALLOWED_ORIGINS: "https://parkwise.example.com,https://api.parkwise.example.com"
+  
+  # LLM Configuration
+  LLM_MODEL: "gpt-4"
+  LLM_API_TYPE: "openai"
+  
+  # Application settings
+  DEBUG: "false"
+  HOST: "0.0.0.0"

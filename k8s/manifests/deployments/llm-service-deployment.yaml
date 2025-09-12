@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: parkwise-llm-service
+  namespace: parkwise
+  labels:
+    app: parkwise-llm-service
+    component: llm-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: parkwise-llm-service
+  template:
+    metadata:
+      labels:
+        app: parkwise-llm-service
+        component: llm-service
+    spec:
+      containers:
+      - name: llm-service
+        image: parkwise/llm-service:latest
+        ports:
+        - containerPort: 8001
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8001
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        env:
+        - name: PORT
+          value: "8001"
+        - name: HOST
+          value: "0.0.0.0"
+        - name: LOG_LEVEL
+          value: "INFO"
+        envFrom:
+        - secretRef:
+            name: parkwise-secrets
+        - configMapRef:
+            name: parkwise-config
+      # Optional: Add node selector for GPU nodes
+      # nodeSelector:
+      #   accelerator: nvidia-tesla-k80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: parkwise-llm-service
+  namespace: parkwise
+  labels:
+    app: parkwise-llm-service
+spec:
+  selector:
+    app: parkwise-llm-service
+  ports:
+  - port: 8001
+    targetPort: 8001
+    protocol: TCP
+  type: ClusterIP

@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: parkwise-frontend
+  namespace: parkwise
+  labels:
+    app: parkwise-frontend
+    component: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: parkwise-frontend
+  template:
+    metadata:
+      labels:
+        app: parkwise-frontend
+        component: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: parkwise/frontend:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        env:
+        - name: REACT_APP_API_URL
+          value: "http://parkwise-backend:3001"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: parkwise-frontend
+  namespace: parkwise
+  labels:
+    app: parkwise-frontend
+spec:
+  selector:
+    app: parkwise-frontend
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+  type: ClusterIP

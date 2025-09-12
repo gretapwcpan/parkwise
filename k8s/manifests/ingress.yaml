@@ -1,0 +1,58 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: parkwise-ingress
+  namespace: parkwise
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
+  labels:
+    app: parkwise
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - parkwise.example.com
+    - api.parkwise.example.com
+    secretName: parkwise-tls
+  rules:
+  - host: parkwise.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: parkwise-frontend
+            port:
+              number: 80
+  - host: api.parkwise.example.com
+    http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: parkwise-backend
+            port:
+              number: 3001
+      - path: /llm
+        pathType: Prefix
+        backend:
+          service:
+            name: parkwise-llm-service
+            port:
+              number: 8001
+      - path: /mcp
+        pathType: Prefix
+        backend:
+          service:
+            name: parkwise-mcp-server
+            port:
+              number: 3002
